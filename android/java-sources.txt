@@ -22,6 +22,7 @@
 "C:/Users/trhugenb/development/appcelerator/countly-sdk-appcelerator-titanium-android/android/src/count/ly/messaging/UserData.java"
 "C:/Users/trhugenb/development/appcelerator/countly-sdk-appcelerator-titanium-android/android/src/org/openudid/OpenUDID_manager.java"
 "C:/Users/trhugenb/development/appcelerator/countly-sdk-appcelerator-titanium-android/android/src/org/openudid/OpenUDID_service.java"
+"C:/Users/trhugenb/development/appcelerator/countly-sdk-appcelerator-titanium-android/android/build/generated/java/count/ly/messaging/TitaniumCountlyAndroidMessagingBootstrap.java"
 "C:/Users/trhugenb/development/appcelerator/countly-sdk-appcelerator-titanium-android/android/build/generated/r/android/support/compat/R.java"
 "C:/Users/trhugenb/development/appcelerator/countly-sdk-appcelerator-titanium-android/android/build/generated/r/android/support/design/R.java"
 "C:/Users/trhugenb/development/appcelerator/countly-sdk-appcelerator-titanium-android/android/build/generated/r/android/support/v7/appcompat/R.java"

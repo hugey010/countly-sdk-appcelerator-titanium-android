@@ -46,7 +46,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static ly.count.android.sdk.CountlyStarRating.STAR_RATING_EVENT_KEY;
+// import static ly.count.android.sdk.CountlyStarRating.STAR_RATING_EVENT_KEY;
 
 /**
  * This class is the public API for the Countly Android SDK.
@@ -833,7 +833,7 @@ public class Countly {
         }
 
         switch (key) {
-            case STAR_RATING_EVENT_KEY:
+            case CountlyStarRating.STAR_RATING_EVENT_KEY:
                 if (Countly.sharedInstance().getConsent(CountlyFeatureNames.starRating)) {
                     eventQueue_.recordEvent(key, segmentation, count, sum, dur);
                     sendEventsForced();
@@ -1177,6 +1177,24 @@ public class Countly {
         exception.printStackTrace(pw);
         connectionQueue_.sendCrashReport(sw.toString(), itIsHandled);
         return this;
+    }
+
+    /**
+     * Log Javascript unhandled exception to report it to server as fatal crash
+     * @param string Exception to log
+     */
+    public synchronized Countly logJavascriptFatalException(String exception) {
+        connectionQueue_.sendCrashReport(exception, false);
+        return this;
+    }
+
+    /**
+    * Log Javascript handled exception to report it to server as non fatal crash
+    * @param string Exception to log
+    */
+    public synchronized Countly logJavascriptNonFatalException(String exception) {
+      connectionQueue_.sendCrashReport(exception, true);
+      return this;
     }
 
     /**
@@ -2233,4 +2251,13 @@ public class Countly {
         }
         return Countly.sharedInstance();
     }
+
+    /**
+    * Get Device OUDID and return
+    */
+    public String getOUDID() {
+      String device_udid =  OpenUDIDAdapter.getOpenUDID();
+      return device_udid;
+    }
+
 }

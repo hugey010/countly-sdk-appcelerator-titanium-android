@@ -1,4 +1,4 @@
-package ly.count.android.sdk;
+package count.ly.messaging;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
