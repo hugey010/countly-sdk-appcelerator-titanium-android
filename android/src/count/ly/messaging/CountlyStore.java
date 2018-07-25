@@ -50,12 +50,24 @@ import java.util.Map;
  */
 public class CountlyStore {
     private static final String PREFERENCES = "COUNTLY_STORE";
+    private static final String PREFERENCES_GCM = "ly.count.android.api.messaging";
     private static final String DELIMITER = ":::";
     private static final String CONNECTIONS_PREFERENCE = "CONNECTIONS";
     private static final String EVENTS_PREFERENCE = "EVENTS";
+    private static final String LOCATION_CITY_PREFERENCE = "LOCATION_CITY";
+    private static final String LOCATION_COUNTRY_CODE_PREFERENCE = "LOCATION_COUNTRY_CODE";
+    private static final String LOCATION_IP_ADDRESS_PREFERENCE = "LOCATION_IP_ADDRESS";
     private static final String LOCATION_PREFERENCE = "LOCATION";
+    private static final String LOCATION_DISABLED_PREFERENCE = "LOCATION_DISABLED";
+    private static final String STAR_RATING_PREFERENCE = "STAR_RATING";
+    private static final String CACHED_ADVERTISING_ID = "ADVERTISING_ID";
+    private static final int MAX_EVENTS = 100;
+    private static final int MAX_REQUESTS = 1000;
 
     private final SharedPreferences preferences_;
+    private final SharedPreferences preferencesGCM_;
+
+    private static final String CONSENT_GCM_PREFERENCES = "ly.count.android.api.messaging.consent.gcm";
 
     /**
      * Constructs a CountlyStore object.
@@ -67,6 +79,7 @@ public class CountlyStore {
             throw new IllegalArgumentException("must provide valid context");
         }
         preferences_ = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+        preferencesGCM_ = context.getSharedPreferences(PREFERENCES_GCM, Context.MODE_PRIVATE);
     }
 
     /**
@@ -90,7 +103,7 @@ public class CountlyStore {
      */
     public List<Event> eventsList() {
         final String[] array = events();
-        final List<Event> events = new ArrayList<Event>(array.length);
+        final List<Event> events = new ArrayList<>(array.length);
         for (String s : array) {
             try {
                 final Event event = Event.fromJSON(new JSONObject(s));
@@ -106,7 +119,7 @@ public class CountlyStore {
         Collections.sort(events, new Comparator<Event>() {
             @Override
             public int compare(final Event e1, final Event e2) {
-                return e1.timestamp - e2.timestamp;
+                return (int)(e1.timestamp - e2.timestamp);
             }
         });
         return events;
@@ -125,9 +138,11 @@ public class CountlyStore {
      */
     public synchronized void addConnection(final String str) {
         if (str != null && str.length() > 0) {
-            final List<String> connections = new ArrayList<String>(Arrays.asList(connections()));
-            connections.add(str);
-            preferences_.edit().putString(CONNECTIONS_PREFERENCE, join(connections, DELIMITER)).commit();
+            final List<String> connections = new ArrayList<>(Arrays.asList(connections()));
+            if (connections.size() < MAX_REQUESTS) {
+                connections.add(str);
+                preferences_.edit().putString(CONNECTIONS_PREFERENCE, join(connections, DELIMITER)).apply();
+            }
         }
     }
 
@@ -138,9 +153,9 @@ public class CountlyStore {
      */
     public synchronized void removeConnection(final String str) {
         if (str != null && str.length() > 0) {
-            final List<String> connections = new ArrayList<String>(Arrays.asList(connections()));
+            final List<String> connections = new ArrayList<>(Arrays.asList(connections()));
             if (connections.remove(str)) {
-                preferences_.edit().putString(CONNECTIONS_PREFERENCE, join(connections, DELIMITER)).commit();
+                preferences_.edit().putString(CONNECTIONS_PREFERENCE, join(connections, DELIMITER)).apply();
             }
         }
     }
@@ -151,26 +166,86 @@ public class CountlyStore {
      */
     void addEvent(final Event event) {
         final List<Event> events = eventsList();
-        events.add(event);
-        preferences_.edit().putString(EVENTS_PREFERENCE, joinEvents(events, DELIMITER)).commit();
+        if (events.size() < MAX_EVENTS) {
+            events.add(event);
+            preferences_.edit().putString(EVENTS_PREFERENCE, joinEvents(events, DELIMITER)).apply();
+        }
     }
 
     /**
      * Sets location of user and sends it with next request
      */
-    void setLocation(final double lat, final double lon) {
-        preferences_.edit().putString(LOCATION_PREFERENCE, lat + "," + lon).commit();
+    void setLocation(final String latLonCoordinates) {
+        preferences_.edit().putString(LOCATION_PREFERENCE, latLonCoordinates).apply();
+    }
+
+    void setLocationCity(final String city) {
+        preferences_.edit().putString(LOCATION_CITY_PREFERENCE, city).apply();
+    }
+
+    void setLocationCountryCode(final String countryCode) {
+        preferences_.edit().putString(LOCATION_COUNTRY_CODE_PREFERENCE, countryCode).apply();
+    }
+
+    void setLocationIpAddress(final String ipAddress) {
+        preferences_.edit().putString(LOCATION_IP_ADDRESS_PREFERENCE, ipAddress).apply();
+    }
+
+    void setLocationDisabled(final boolean locationDisabled) {
+        preferences_.edit().putBoolean(LOCATION_DISABLED_PREFERENCE, locationDisabled).apply();
     }
 
     /**
      * Get location or empty string in case if no location is specified
      */
-    String getAndRemoveLocation() {
-        String location = preferences_.getString(LOCATION_PREFERENCE, "");
-        if (!location.equals("")) {
-            preferences_.edit().remove(LOCATION_PREFERENCE).commit();
-        }
-        return location;
+    String getLocation() {
+        return preferences_.getString(LOCATION_PREFERENCE, "");
+    }
+
+    String getLocationCity() {
+        return preferences_.getString(LOCATION_CITY_PREFERENCE, "");
+    }
+
+    String getLocationCountryCode() {
+        return preferences_.getString(LOCATION_COUNTRY_CODE_PREFERENCE, "");
+    }
+
+    String getLocationIpAddress() {
+        return preferences_.getString(LOCATION_IP_ADDRESS_PREFERENCE, "");
+    }
+
+    boolean getLocationDisabled() {
+        return preferences_.getBoolean(LOCATION_DISABLED_PREFERENCE, false);
+    }
+
+    /**
+     * Set the preferences that are used for the star rating
+     */
+    void setStarRatingPreferences(String prefs) {
+        preferences_.edit().putString(STAR_RATING_PREFERENCE, prefs).apply();
+    }
+
+    /**
+     * Get the preferences that are used for the star rating
+     */
+    String getStarRatingPreferences() {
+        return preferences_.getString(STAR_RATING_PREFERENCE, "");
+    }
+
+    void setCachedAdvertisingId(String advertisingId) {
+        preferences_.edit().putString(CACHED_ADVERTISING_ID, advertisingId).apply();
+    }
+
+    String getCachedAdvertisingId() {
+        return preferences_.getString(CACHED_ADVERTISING_ID, "");
+    }
+
+    void setConsentPush(boolean consentValue){
+        preferencesGCM_.edit().putBoolean(CONSENT_GCM_PREFERENCES, consentValue).apply();
+    }
+
+    Boolean getConsentPush(){
+        return preferencesGCM_.getBoolean(CONSENT_GCM_PREFERENCES, false);
     }
 
     /**
@@ -178,17 +253,22 @@ public class CountlyStore {
      * @param key name of the custom event, required, must not be the empty string
      * @param segmentation segmentation values for the custom event, may be null
      * @param timestamp timestamp (seconds since 1970) in GMT when the event occurred
+     * @param hour current local hour on device
+     * @param dow current day of the week on device
      * @param count count associated with the custom event, should be more than zero
      * @param sum sum associated with the custom event, if not used, pass zero.
      *            NaN and infinity values will be quietly ignored.
      */
-    public synchronized void addEvent(final String key, final Map<String, String> segmentation, final int timestamp, final int count, final double sum) {
+    public synchronized void addEvent(final String key, final Map<String, String> segmentation, final long timestamp, final int hour, final int dow, final int count, final double sum, final double dur) {
         final Event event = new Event();
         event.key = key;
         event.segmentation = segmentation;
         event.timestamp = timestamp;
+        event.hour = hour;
+        event.dow = dow;
         event.count = count;
         event.sum = sum;
+        event.dur = dur;
 
         addEvent(event);
     }
@@ -202,7 +282,7 @@ public class CountlyStore {
         if (eventsToRemove != null && eventsToRemove.size() > 0) {
             final List<Event> events = eventsList();
             if (events.removeAll(eventsToRemove)) {
-                preferences_.edit().putString(EVENTS_PREFERENCE, joinEvents(events, DELIMITER)).commit();
+                preferences_.edit().putString(EVENTS_PREFERENCE, joinEvents(events, DELIMITER)).apply();
             }
         }
     }
@@ -214,7 +294,7 @@ public class CountlyStore {
      * @param delimiter delimiter to use, should not be something that can be found in URL-encoded JSON string
      */
     static String joinEvents(final Collection<Event> collection, final String delimiter) {
-        final List<String> strings = new ArrayList<String>();
+        final List<String> strings = new ArrayList<>();
         for (Event e : collection) {
             strings.add(e.toJSON().toString());
         }
@@ -253,9 +333,9 @@ public class CountlyStore {
      */
     public synchronized void setPreference(final String key, final String value) {
         if (value == null) {
-            preferences_.edit().remove(key).commit();
+            preferences_.edit().remove(key).apply();
         } else {
-            preferences_.edit().putString(key, value).commit();
+            preferences_.edit().putString(key, value).apply();
         }
     }
 
@@ -264,6 +344,7 @@ public class CountlyStore {
         final SharedPreferences.Editor prefsEditor = preferences_.edit();
         prefsEditor.remove(EVENTS_PREFERENCE);
         prefsEditor.remove(CONNECTIONS_PREFERENCE);
-        prefsEditor.commit();
+        prefsEditor.clear();
+        prefsEditor.apply();
     }
 }

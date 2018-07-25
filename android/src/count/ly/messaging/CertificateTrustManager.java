@@ -1,7 +1,6 @@
 package count.ly.messaging;
 
 import android.util.Base64;
-import android.util.Log;
 
 import java.io.ByteArrayInputStream;
 import java.security.KeyStore;
@@ -26,19 +25,29 @@ import javax.net.ssl.X509TrustManager;
 // http://www.thoughtcrime.org/blog/authenticity-is-broken-in-ssl-but-your-app-ha/
 public final class CertificateTrustManager implements X509TrustManager {
 
-    // DER encoded public key
+    // DER encoded public keys
     private final List<byte[]> keys;
 
-    public CertificateTrustManager(List<String> certificates) throws CertificateException {
-        if (certificates == null || certificates.size() == 0) {
-            throw new IllegalArgumentException("You must specify non-empty keys list");
+    // DER encoded certificates
+    private final List<byte[]> certificates;
+
+    public CertificateTrustManager(List<String> keys, List<String> certs) throws CertificateException {
+        if ((keys == null || keys.size() == 0) && (certs == null || certs.size() == 0)) {
+            throw new IllegalArgumentException("You must specify non-empty keys list or certs list");
         }
 
-        this.keys = new ArrayList<byte[]>();
-        for (String key : certificates) {
+        this.keys = new ArrayList<>();
+        if (keys != null) for (String key : keys) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             Certificate cert = cf.generateCertificate(new ByteArrayInputStream(Base64.decode(key, Base64.DEFAULT)));
             this.keys.add(cert.getPublicKey().getEncoded());
+        }
+
+        this.certificates = new ArrayList<>();
+        if (certs != null) for (String cert : certs) {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            Certificate certificate = cf.generateCertificate(new ByteArrayInputStream(Base64.decode(cert, Base64.DEFAULT)));
+            this.certificates.add(certificate.getEncoded());
         }
     }
 
@@ -51,7 +60,7 @@ public final class CertificateTrustManager implements X509TrustManager {
             throw new IllegalArgumentException("PublicKeyManager: X509Certificate is empty");
         }
 
-        if (!(null != authType && authType.equalsIgnoreCase("RSA"))) {
+        if (!(null != authType && authType.contains("RSA"))) {
             throw new CertificateException("PublicKeyManager: AuthType is not RSA");
         }
 
@@ -69,10 +78,18 @@ public final class CertificateTrustManager implements X509TrustManager {
             throw new CertificateException(e);
         }
 
-        byte server[] = chain[0].getPublicKey().getEncoded();
+        byte serverPublicKey[] = chain[0].getPublicKey().getEncoded();
+        byte serverCertificate[] = chain[0].getEncoded();
+
 
         for (byte[] key : keys) {
-            if (Arrays.equals(key, server)) {
+            if (Arrays.equals(key, serverPublicKey)) {
+                return;
+            }
+        }
+
+        for (byte[] key : certificates) {
+            if (Arrays.equals(key, serverCertificate)) {
                 return;
             }
         }

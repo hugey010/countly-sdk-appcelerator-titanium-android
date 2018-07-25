@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 
 public class MessagingAdapter {
     private static final String TAG = "MessagingAdapter";
-    private final static String MESSAGING_CLASS_NAME = "count.ly.messaging.CountlyMessaging";
+    private final static String MESSAGING_CLASS_NAME = "ly.count.android.sdk.messaging.CountlyMessaging";
 
     public static boolean isMessagingAvailable() {
         boolean messagingAvailable = false;
@@ -20,11 +20,11 @@ public class MessagingAdapter {
         return messagingAvailable;
     }
 
-    public static boolean init(Activity activity, Class<? extends Activity> activityClass, String sender, String[] buttonNames) {
+    public static boolean init(Activity activity, Class<? extends Activity> activityClass, String sender, String[] buttonNames, Boolean disableUI, Integer customIconResId, Boolean addMetadataToPushIntents, int customLargeIconRes, int customAccentColor) {
         try {
             final Class<?> cls = Class.forName(MESSAGING_CLASS_NAME);
-            final Method method = cls.getMethod("init", Activity.class, Class.class, String.class, String[].class);
-            method.invoke(null, activity, activityClass, sender, buttonNames);
+            final Method method = cls.getMethod("init", Activity.class, Class.class, String.class, String[].class, Boolean.class, Integer.class, Boolean.class, Integer.class, Integer.class);
+            method.invoke(null, activity, activityClass, sender, buttonNames, disableUI, customIconResId, addMetadataToPushIntents, customLargeIconRes, customAccentColor);
             return true;
         }
         catch (Throwable logged) {

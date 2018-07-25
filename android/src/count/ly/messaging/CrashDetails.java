@@ -21,6 +21,7 @@ THE SOFTWARE.
 */
 package count.ly.messaging;
 
+import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -55,8 +56,8 @@ import java.util.regex.Pattern;
  *
  */
 class CrashDetails {
-    private static ArrayList<String> logs = new ArrayList<String>();
-    private static int startTime = Countly.currentTimestamp();
+    private static final ArrayList<String> logs = new ArrayList<>();
+    private static final int startTime = Countly.currentTimestamp();
     private static Map<String,String> customSegments = null;
     private static boolean inBackground = true;
     private static long totalMemory = 0;
@@ -64,7 +65,7 @@ class CrashDetails {
     private static long getTotalRAM() {
         if(totalMemory == 0) {
             RandomAccessFile reader = null;
-            String load = null;
+            String load;
             try {
                 reader = new RandomAccessFile("/proc/meminfo", "r");
                 load = reader.readLine();
@@ -76,11 +77,29 @@ class CrashDetails {
                 while (m.find()) {
                     value = m.group(1);
                 }
-                reader.close();
-
-                totalMemory = Long.parseLong(value) / 1024;
+                try {
+                    totalMemory = Long.parseLong(value) / 1024;
+                }catch(NumberFormatException ex){
+                    totalMemory = 0;
+                }
             } catch (IOException ex) {
+                try {
+                    if(reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException exc) {
+                    exc.printStackTrace();
+                }
                 ex.printStackTrace();
+            }
+            finally {
+                try {
+                    if(reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException exc) {
+                    exc.printStackTrace();
+                }
             }
         }
         return totalMemory;
@@ -118,14 +137,14 @@ class CrashDetails {
      * Returns the collected logs.
      */
     static String getLogs() {
-        String allLogs = "";
+        StringBuilder allLogs = new StringBuilder();
 
         for (String s : logs)
         {
-            allLogs += s + "\n";
+            allLogs.append(s).append("\n");
         }
         logs.clear();
-        return allLogs;
+        return allLogs.toString();
     }
 
     /**
@@ -133,7 +152,7 @@ class CrashDetails {
      * like versions of dependency libraries.
      */
     static void setCustomSegments(Map<String,String> segments) {
-        customSegments = new HashMap<String, String>();
+        customSegments = new HashMap<>();
         customSegments.putAll(segments);
     }
 
@@ -151,6 +170,7 @@ class CrashDetails {
     /**
      * Returns the current device manufacturer.
      */
+    @SuppressWarnings("SameReturnValue")
     static String getManufacturer() {
         return android.os.Build.MANUFACTURER;
     }
@@ -158,8 +178,9 @@ class CrashDetails {
     /**
      * Returns the current device cpu.
      */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     static String getCpu() {
-        if(android.os.Build.VERSION.SDK_INT < 21 )
+        if(android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP )
             return android.os.Build.CPU_ABI;
         else
             return Build.SUPPORTED_ABIS[0];
@@ -199,18 +220,19 @@ class CrashDetails {
     /**
      * Returns the total device RAM amount.
      */
-    static String getRamTotal(Context context) {
+    static String getRamTotal() {
         return Long.toString(getTotalRAM());
     }
 
     /**
      * Returns the current device disk space.
      */
+    @TargetApi(18)
     static String getDiskCurrent() {
         if(android.os.Build.VERSION.SDK_INT < 18 ) {
             StatFs statFs = new StatFs(Environment.getRootDirectory().getAbsolutePath());
-            long   total  = (statFs.getBlockCount() * statFs.getBlockSize());
-            long   free   = (statFs.getAvailableBlocks() * statFs.getBlockSize());
+            long   total  = ((long)statFs.getBlockCount() * (long)statFs.getBlockSize());
+            long   free   = ((long)statFs.getAvailableBlocks() * (long)statFs.getBlockSize());
             return Long.toString((total - free)/ 1048576L);
         }
         else{
@@ -224,10 +246,11 @@ class CrashDetails {
     /**
      * Returns the current device disk space.
      */
+    @TargetApi(18)
     static String getDiskTotal() {
         if(android.os.Build.VERSION.SDK_INT < 18 ) {
             StatFs statFs = new StatFs(Environment.getRootDirectory().getAbsolutePath());
-            long   total  = (statFs.getBlockCount() * statFs.getBlockSize());
+            long   total  = ((long)statFs.getBlockCount() * (long)statFs.getBlockSize());
             return Long.toString(total/ 1048576L);
         }
         else{
@@ -243,12 +266,14 @@ class CrashDetails {
     static String getBatteryLevel(Context context) {
         try {
             Intent batteryIntent = context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-            int level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-            int scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+            if(batteryIntent != null) {
+                int level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                int scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 
-            // Error checking that probably isn't needed but I added just in case.
-            if (level > -1 && scale > 0) {
-                return Float.toString(((float) level / (float) scale) * 100.0f);
+                // Error checking that probably isn't needed but I added just in case.
+                if (level > -1 && scale > 0) {
+                    return Float.toString(((float) level / (float) scale) * 100.0f);
+                }
             }
         }
         catch(Exception e){
@@ -357,7 +382,7 @@ class CrashDetails {
                 "_cpu", getCpu(),
                 "_opengl", getOpenGL(context),
                 "_ram_current", getRamCurrent(context),
-                "_ram_total", getRamTotal(context),
+                "_ram_total", getRamTotal(),
                 "_disk_current", getDiskCurrent(),
                 "_disk_total", getDiskTotal(),
                 "_bat", getBatteryLevel(context),
@@ -374,15 +399,7 @@ class CrashDetails {
         } catch (JSONException e) {
             //no custom segments
         }
-        String result = json.toString();
-
-        try {
-            result = java.net.URLEncoder.encode(result, "UTF-8");
-        } catch (UnsupportedEncodingException ignored) {
-            // should never happen because Android guarantees UTF-8 support
-        }
-
-        return result;
+        return json.toString();
     }
 
     /**

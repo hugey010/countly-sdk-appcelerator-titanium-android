@@ -3021,13 +3021,7 @@ containing a value of this type.
         public static int abc_textfield_search_material=0x7f020051;
         public static int abc_vector_test=0x7f020052;
         public static int avd_hide_password=0x7f020053;
-        public static int avd_hide_password_1=0x7f02007c;
-        public static int avd_hide_password_2=0x7f02007d;
-        public static int avd_hide_password_3=0x7f02007e;
         public static int avd_show_password=0x7f020054;
-        public static int avd_show_password_1=0x7f02007f;
-        public static int avd_show_password_2=0x7f020080;
-        public static int avd_show_password_3=0x7f020081;
         public static int btn_check_buttonless_on_144=0x7f020055;
         public static int btn_check_buttonless_on_192=0x7f020056;
         public static int btn_check_buttonless_on_36=0x7f020057;
