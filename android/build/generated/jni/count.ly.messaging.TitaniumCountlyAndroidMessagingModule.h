@@ -31,6 +31,7 @@ private:
 
 	// Methods -----------------------------------------------------------
 	static void enableDebug(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void setLocationViaIP(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void startCrashReporting(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void getOUDID(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void userData(const v8::FunctionCallbackInfo<v8::Value>&);

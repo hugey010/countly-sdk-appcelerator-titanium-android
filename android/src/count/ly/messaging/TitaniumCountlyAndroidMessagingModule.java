@@ -127,7 +127,6 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 
 		// Class to processCallBack on Module
 		public static void processPushCallBack() {
-
 			Log.d(LCAT, "processPushCallBack");
 
 			TitaniumCountlyAndroidMessagingModule module = getModule();
@@ -135,7 +134,6 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 				return;
 			}
 			module.sendNotification();
-
 		}
 
 		@Kroll.method
@@ -233,22 +231,18 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 			CountlyMessaging.recordMessageAction(messageId);
 		}
 
-		// @Kroll.method
-		// public void setLocation(String latitudeString, String longitudeString) {
-		// 	Log.d(LCAT, "setLocation");
-		//
-		// 	double latitude = Double.parseDouble(latitudeString);
-		// 	double longitude = Double.parseDouble(longitudeString);
-		//
-		// 	Countly.sharedInstance().setLocation(latitude, longitude);
-		// }
+		@Kroll.method
+		public void setLocationViaIP(String ipAddress) {
+				Log.d(LCAT, "setLocation");
+
+				Countly.sharedInstance().setLocation(null, null, null, ipAddress.toString());
+		}
 
 		@Kroll.method
 		public void stopCount() {
 			Log.d(LCAT, "Stop Count called");
 			Countly.sharedInstance().onStop();
 		}
-
 
 		@Kroll.method
 		public void startCrashReporting() {
@@ -394,6 +388,12 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 		    }
 			// END IF - check for segmentation data
 
+		}
+
+		@Kroll.method
+		public void event(String name) {
+			Log.d(LCAT, "View Send called");
+			Countly.sharedInstance().recordView(name.toString());
 		}
 
 		@Kroll.method

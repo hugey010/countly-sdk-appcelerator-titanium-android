@@ -94,6 +94,7 @@ Local<FunctionTemplate> TitaniumCountlyAndroidMessagingModule::getProxyTemplate(
 
 	// Method bindings --------------------------------------------------------
 	titanium::SetProtoMethod(isolate, t, "enableDebug", TitaniumCountlyAndroidMessagingModule::enableDebug);
+	titanium::SetProtoMethod(isolate, t, "setLocationViaIP", TitaniumCountlyAndroidMessagingModule::setLocationViaIP);
 	titanium::SetProtoMethod(isolate, t, "startCrashReporting", TitaniumCountlyAndroidMessagingModule::startCrashReporting);
 	titanium::SetProtoMethod(isolate, t, "getOUDID", TitaniumCountlyAndroidMessagingModule::getOUDID);
 	titanium::SetProtoMethod(isolate, t, "userData", TitaniumCountlyAndroidMessagingModule::userData);
@@ -169,6 +170,85 @@ void TitaniumCountlyAndroidMessagingModule::enableDebug(const FunctionCallbackIn
 
 	proxy->unreferenceJavaObject(javaProxy);
 
+
+
+	if (env->ExceptionCheck()) {
+		titanium::JSException::fromJavaException(isolate);
+		env->ExceptionClear();
+	}
+
+
+
+
+	args.GetReturnValue().Set(v8::Undefined(isolate));
+
+}
+void TitaniumCountlyAndroidMessagingModule::setLocationViaIP(const FunctionCallbackInfo<Value>& args)
+{
+	LOGD(TAG, "setLocationViaIP()");
+	Isolate* isolate = args.GetIsolate();
+	HandleScope scope(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(TitaniumCountlyAndroidMessagingModule::javaClass, "setLocationViaIP", "(Ljava/lang/String;)V");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'setLocationViaIP' with signature '(Ljava/lang/String;)V'";
+			LOGE(TAG, error);
+				titanium::JSException::Error(isolate, error);
+				return;
+		}
+	}
+
+	Local<Object> holder = args.Holder();
+	// If holder isn't the JavaObject wrapper we expect, look up the prototype chain
+	if (!JavaObject::isJavaObject(holder)) {
+		holder = holder->FindInstanceInPrototypeChain(getProxyTemplate(isolate));
+	}
+
+	titanium::Proxy* proxy = NativeObject::Unwrap<titanium::Proxy>(holder);
+
+	if (args.Length() < 1) {
+		char errorStringBuffer[100];
+		sprintf(errorStringBuffer, "setLocationViaIP: Invalid number of arguments. Expected 1 but got %d", args.Length());
+		titanium::JSException::Error(isolate, errorStringBuffer);
+		return;
+	}
+
+	jvalue jArguments[1];
+
+
+
+
+	
+
+	if (!args[0]->IsNull()) {
+		Local<Value> arg_0 = args[0];
+		jArguments[0].l =
+			titanium::TypeConverter::jsValueToJavaString(
+				isolate,
+				env, arg_0);
+	} else {
+		jArguments[0].l = NULL;
+	}
+
+	jobject javaProxy = proxy->getJavaObject();
+	if (javaProxy == NULL) {
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	env->CallVoidMethodA(javaProxy, methodID, jArguments);
+
+	proxy->unreferenceJavaObject(javaProxy);
+
+
+
+				env->DeleteLocalRef(jArguments[0].l);
 
 
 	if (env->ExceptionCheck()) {
@@ -1298,9 +1378,9 @@ void TitaniumCountlyAndroidMessagingModule::event(const FunctionCallbackInfo<Val
 	}
 	static jmethodID methodID = NULL;
 	if (!methodID) {
-		methodID = env->GetMethodID(TitaniumCountlyAndroidMessagingModule::javaClass, "event", "(Lorg/appcelerator/kroll/KrollDict;)V");
+		methodID = env->GetMethodID(TitaniumCountlyAndroidMessagingModule::javaClass, "event", "(Ljava/lang/String;)V");
 		if (!methodID) {
-			const char *error = "Couldn't find proxy method 'event' with signature '(Lorg/appcelerator/kroll/KrollDict;)V'";
+			const char *error = "Couldn't find proxy method 'event' with signature '(Ljava/lang/String;)V'";
 			LOGE(TAG, error);
 				titanium::JSException::Error(isolate, error);
 				return;
@@ -1327,14 +1407,14 @@ void TitaniumCountlyAndroidMessagingModule::event(const FunctionCallbackInfo<Val
 
 
 
-	bool isNew_0;
+	
 
 	if (!args[0]->IsNull()) {
 		Local<Value> arg_0 = args[0];
 		jArguments[0].l =
-			titanium::TypeConverter::jsObjectToJavaKrollDict(
+			titanium::TypeConverter::jsValueToJavaString(
 				isolate,
-				env, arg_0, &isNew_0);
+				env, arg_0);
 	} else {
 		jArguments[0].l = NULL;
 	}
@@ -1350,9 +1430,7 @@ void TitaniumCountlyAndroidMessagingModule::event(const FunctionCallbackInfo<Val
 
 
 
-			if (isNew_0) {
 				env->DeleteLocalRef(jArguments[0].l);
-			}
 
 
 	if (env->ExceptionCheck()) {
