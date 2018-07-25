@@ -418,7 +418,7 @@ public class ConnectionQueue {
             //do this only if allowed
             data += "&location=";
         } else {
-            if(Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.location)) {
+            // if(Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.location)) {
                 //location should be send, add all the fields we have
                 String location = cs.getLocation();
                 String city = cs.getLocationCity();
@@ -440,7 +440,7 @@ public class ConnectionQueue {
                 if(ip != null && !ip.isEmpty()){
                     data += "&ip=" + ip;
                 }
-            }
+            // }
         }
         return data;
     }
