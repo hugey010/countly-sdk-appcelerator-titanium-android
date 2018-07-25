@@ -233,9 +233,9 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 
 		@Kroll.method
 		public void setLocationViaIP(String ipAddress) {
-				Log.d(LCAT, "setLocation");
+				Log.d(LCAT, "SetLocation");
 
-				Countly.sharedInstance().setLocation(null, null, null, ipAddress.toString());
+				Countly.sharedInstance().setLocation(null, null, null, ipAddress);
 		}
 
 		@Kroll.method
@@ -391,9 +391,10 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 		}
 
 		@Kroll.method
-		public void event(String name) {
+		public void view(String name) {
 			Log.d(LCAT, "View Send called");
-			Countly.sharedInstance().recordView(name.toString());
+
+			Countly.sharedInstance().recordView(name);
 		}
 
 		@Kroll.method

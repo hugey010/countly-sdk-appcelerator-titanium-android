@@ -45,6 +45,7 @@ private:
 	static void startMessaging(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void crashTest(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void stopCount(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void view(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void recordHandledException(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void event(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void sendQueuedNotification(const v8::FunctionCallbackInfo<v8::Value>&);
