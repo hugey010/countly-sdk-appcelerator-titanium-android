@@ -31,7 +31,6 @@ private:
 
 	// Methods -----------------------------------------------------------
 	static void enableDebug(const v8::FunctionCallbackInfo<v8::Value>&);
-	static void setLocationViaIP(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void startCrashReporting(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void getOUDID(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void userData(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -47,6 +46,7 @@ private:
 	static void stopCount(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void view(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void recordHandledException(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void setLocation(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void event(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void sendQueuedNotification(const v8::FunctionCallbackInfo<v8::Value>&);
 

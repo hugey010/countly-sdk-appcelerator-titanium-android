@@ -232,10 +232,25 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 		}
 
 		@Kroll.method
-		public void setLocationViaIP(String ipAddress) {
+		public void setLocation(KrollDict args) {
 				Log.d(LCAT, "SetLocation");
 
-				Countly.sharedInstance().setLocation(null, null, null, ipAddress);
+				Object latObject = args.get("latitude");
+				Object lonObject = args.get("longitude");
+				Object ipObject = args.get("ipaddress");
+
+				String location = null;
+				String ipAddress = null;
+
+				if (latObject != null && lonObject != null) {
+					location = latObject.toString() + "," + lonObject.toString();
+				}
+
+				if (ipObject != null) {
+					ipAddress = ipObject.toString();
+				}
+
+				Countly.sharedInstance().setLocation(null, null, location, ipAddress);
 		}
 
 		@Kroll.method
