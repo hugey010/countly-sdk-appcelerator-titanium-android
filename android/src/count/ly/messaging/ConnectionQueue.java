@@ -409,16 +409,16 @@ public class ConnectionQueue {
         String data = "";
 
         if(!Countly.sharedInstance().anyConsentGiven()){
-            //return data;
+            return data;
         }
 
-        // if(canSendEmptyWithNoConsent && (cs.getLocationDisabled() || !Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.location))){
+        if(canSendEmptyWithNoConsent && (cs.getLocationDisabled() || !Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.location))){
             //if location is disabled or consent no given, send empty location info
             //this way it is cleared server side and geoip is not used
             //do this only if allowed
-            // data += "&location=";
-        // } else {
-            // if(Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.location)) {
+            data += "&location=";
+        } else {
+            if(Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.location)) {
                 //location should be send, add all the fields we have
                 String location = cs.getLocation();
                 String city = cs.getLocationCity();
@@ -440,8 +440,8 @@ public class ConnectionQueue {
                 if(ip != null && !ip.isEmpty()){
                     data += "&ip=" + ip;
                 }
-            // }
-        // }
+            }
+        }
         return data;
     }
 

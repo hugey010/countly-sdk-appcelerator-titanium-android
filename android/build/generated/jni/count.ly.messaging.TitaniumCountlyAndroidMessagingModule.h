@@ -37,6 +37,7 @@ private:
 	static void startMessagingTest(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void startCrashReportingWithSegments(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void recordUncaughtException(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void viewSegments(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void start(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void recordPushAction(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void sendNotification(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -47,6 +48,7 @@ private:
 	static void view(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void recordHandledException(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void setLocation(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void disableUpdateSessionRequests(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void event(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void sendQueuedNotification(const v8::FunctionCallbackInfo<v8::Value>&);
 

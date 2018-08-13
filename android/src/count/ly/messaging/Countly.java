@@ -903,6 +903,34 @@ public class Countly {
     }
 
     /**
+     *  Record a view manually, without automatic tracking
+     * or track view that is not automatically tracked
+     * like fragment, Message box or transparent Activity
+     * @param viewName String - name of the view
+     * @param segmentation Map&lt;String, String&gt; key segments and their values
+     * @return Returns link to Countly for call chaining
+     */
+    public synchronized Countly recordView(String viewName, Map<String, String> segmentation) {
+      if (Countly.sharedInstance().isLoggingEnabled()) {
+            Log.d(Countly.TAG, "Recording segmented view with name: [" + viewName + "]");
+      }
+
+      reportViewDuration();
+      lastView = viewName;
+      lastViewStart = Countly.currentTimestamp();
+      HashMap<String, String> segments = new HashMap<String, String>(segmentation);
+      segments.put("name", viewName);
+      segments.put("visit", "1");
+      segments.put("segment", "Android");
+      if(firstView) {
+        firstView = false;
+        segments.put("start", "1");
+      }
+      recordEvent(VIEW_EVENT_KEY, segments, 1);
+      return this;
+    }
+
+    /**
      * Sets information about user. Possible keys are:
      * <ul>
      * <li>
@@ -1048,9 +1076,9 @@ public class Countly {
             Log.d(Countly.TAG, "Setting location parameters");
         }
 
-        if(!getConsent(CountlyFeatureNames.location)){
-            return this;
-        }
+        // if(!getConsent(CountlyFeatureNames.location)){
+        //     return this;
+        // }
 
         if(country_code != null){
             connectionQueue_.getCountlyStore().setLocationCountryCode(country_code);

@@ -100,6 +100,7 @@ Local<FunctionTemplate> TitaniumCountlyAndroidMessagingModule::getProxyTemplate(
 	titanium::SetProtoMethod(isolate, t, "startMessagingTest", TitaniumCountlyAndroidMessagingModule::startMessagingTest);
 	titanium::SetProtoMethod(isolate, t, "startCrashReportingWithSegments", TitaniumCountlyAndroidMessagingModule::startCrashReportingWithSegments);
 	titanium::SetProtoMethod(isolate, t, "recordUncaughtException", TitaniumCountlyAndroidMessagingModule::recordUncaughtException);
+	titanium::SetProtoMethod(isolate, t, "viewSegments", TitaniumCountlyAndroidMessagingModule::viewSegments);
 	titanium::SetProtoMethod(isolate, t, "start", TitaniumCountlyAndroidMessagingModule::start);
 	titanium::SetProtoMethod(isolate, t, "recordPushAction", TitaniumCountlyAndroidMessagingModule::recordPushAction);
 	titanium::SetProtoMethod(isolate, t, "sendNotification", TitaniumCountlyAndroidMessagingModule::sendNotification);
@@ -110,6 +111,7 @@ Local<FunctionTemplate> TitaniumCountlyAndroidMessagingModule::getProxyTemplate(
 	titanium::SetProtoMethod(isolate, t, "view", TitaniumCountlyAndroidMessagingModule::view);
 	titanium::SetProtoMethod(isolate, t, "recordHandledException", TitaniumCountlyAndroidMessagingModule::recordHandledException);
 	titanium::SetProtoMethod(isolate, t, "setLocation", TitaniumCountlyAndroidMessagingModule::setLocation);
+	titanium::SetProtoMethod(isolate, t, "disableUpdateSessionRequests", TitaniumCountlyAndroidMessagingModule::disableUpdateSessionRequests);
 	titanium::SetProtoMethod(isolate, t, "event", TitaniumCountlyAndroidMessagingModule::event);
 	titanium::SetProtoMethod(isolate, t, "sendQueuedNotification", TitaniumCountlyAndroidMessagingModule::sendQueuedNotification);
 
@@ -640,6 +642,102 @@ void TitaniumCountlyAndroidMessagingModule::recordUncaughtException(const Functi
 
 			if (isNew_0) {
 				env->DeleteLocalRef(jArguments[0].l);
+			}
+
+
+	if (env->ExceptionCheck()) {
+		titanium::JSException::fromJavaException(isolate);
+		env->ExceptionClear();
+	}
+
+
+
+
+	args.GetReturnValue().Set(v8::Undefined(isolate));
+
+}
+void TitaniumCountlyAndroidMessagingModule::viewSegments(const FunctionCallbackInfo<Value>& args)
+{
+	LOGD(TAG, "viewSegments()");
+	Isolate* isolate = args.GetIsolate();
+	HandleScope scope(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(TitaniumCountlyAndroidMessagingModule::javaClass, "viewSegments", "(Ljava/lang/String;Ljava/util/HashMap;)V");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'viewSegments' with signature '(Ljava/lang/String;Ljava/util/HashMap;)V'";
+			LOGE(TAG, error);
+				titanium::JSException::Error(isolate, error);
+				return;
+		}
+	}
+
+	Local<Object> holder = args.Holder();
+	// If holder isn't the JavaObject wrapper we expect, look up the prototype chain
+	if (!JavaObject::isJavaObject(holder)) {
+		holder = holder->FindInstanceInPrototypeChain(getProxyTemplate(isolate));
+	}
+
+	titanium::Proxy* proxy = NativeObject::Unwrap<titanium::Proxy>(holder);
+
+	if (args.Length() < 2) {
+		char errorStringBuffer[100];
+		sprintf(errorStringBuffer, "viewSegments: Invalid number of arguments. Expected 2 but got %d", args.Length());
+		titanium::JSException::Error(isolate, errorStringBuffer);
+		return;
+	}
+
+	jvalue jArguments[2];
+
+
+
+
+	
+
+	if (!args[0]->IsNull()) {
+		Local<Value> arg_0 = args[0];
+		jArguments[0].l =
+			titanium::TypeConverter::jsValueToJavaString(
+				isolate,
+				env, arg_0);
+	} else {
+		jArguments[0].l = NULL;
+	}
+
+	bool isNew_1;
+
+	if (!args[1]->IsNull()) {
+		Local<Value> arg_1 = args[1];
+		jArguments[1].l =
+			titanium::TypeConverter::jsValueToJavaObject(
+				isolate,
+				env, arg_1, &isNew_1);
+	} else {
+		jArguments[1].l = NULL;
+	}
+
+	jobject javaProxy = proxy->getJavaObject();
+	if (javaProxy == NULL) {
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	env->CallVoidMethodA(javaProxy, methodID, jArguments);
+
+	proxy->unreferenceJavaObject(javaProxy);
+
+
+
+				env->DeleteLocalRef(jArguments[0].l);
+
+
+			if (isNew_1) {
+				env->DeleteLocalRef(jArguments[1].l);
 			}
 
 
@@ -1434,6 +1532,60 @@ void TitaniumCountlyAndroidMessagingModule::setLocation(const FunctionCallbackIn
 			if (isNew_0) {
 				env->DeleteLocalRef(jArguments[0].l);
 			}
+
+
+	if (env->ExceptionCheck()) {
+		titanium::JSException::fromJavaException(isolate);
+		env->ExceptionClear();
+	}
+
+
+
+
+	args.GetReturnValue().Set(v8::Undefined(isolate));
+
+}
+void TitaniumCountlyAndroidMessagingModule::disableUpdateSessionRequests(const FunctionCallbackInfo<Value>& args)
+{
+	LOGD(TAG, "disableUpdateSessionRequests()");
+	Isolate* isolate = args.GetIsolate();
+	HandleScope scope(isolate);
+
+	JNIEnv *env = titanium::JNIScope::getEnv();
+	if (!env) {
+		titanium::JSException::GetJNIEnvironmentError(isolate);
+		return;
+	}
+	static jmethodID methodID = NULL;
+	if (!methodID) {
+		methodID = env->GetMethodID(TitaniumCountlyAndroidMessagingModule::javaClass, "disableUpdateSessionRequests", "()V");
+		if (!methodID) {
+			const char *error = "Couldn't find proxy method 'disableUpdateSessionRequests' with signature '()V'";
+			LOGE(TAG, error);
+				titanium::JSException::Error(isolate, error);
+				return;
+		}
+	}
+
+	Local<Object> holder = args.Holder();
+	// If holder isn't the JavaObject wrapper we expect, look up the prototype chain
+	if (!JavaObject::isJavaObject(holder)) {
+		holder = holder->FindInstanceInPrototypeChain(getProxyTemplate(isolate));
+	}
+
+	titanium::Proxy* proxy = NativeObject::Unwrap<titanium::Proxy>(holder);
+
+	jvalue* jArguments = 0;
+
+	jobject javaProxy = proxy->getJavaObject();
+	if (javaProxy == NULL) {
+		args.GetReturnValue().Set(v8::Undefined(isolate));
+		return;
+	}
+	env->CallVoidMethodA(javaProxy, methodID, jArguments);
+
+	proxy->unreferenceJavaObject(javaProxy);
+
 
 
 	if (env->ExceptionCheck()) {

@@ -76,6 +76,13 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 		}
 
 		@Kroll.method
+		public void disableUpdateSessionRequests() {
+			Log.d(LCAT, "Disable update session requests called");
+
+			Countly.sharedInstance().setDisableUpdateSessionRequests(true);
+		}
+
+		@Kroll.method
 		public void start(String apiKey,String url) {
 			Log.d(LCAT, "Start called");
 
@@ -138,7 +145,6 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 
 		@Kroll.method
 		public void sendNotification() {
-
 			Log.d(LCAT, "Send Notification");
 			// Check if Module has Listeners
 			if (hasListeners("receivePush")) {
@@ -233,24 +239,26 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 
 		@Kroll.method
 		public void setLocation(KrollDict args) {
-				Log.d(LCAT, "SetLocation");
+			Log.d(LCAT, "SetLocation");
 
-				Object latObject = args.get("latitude");
-				Object lonObject = args.get("longitude");
-				Object ipObject = args.get("ipaddress");
+			Object latObject = args.get("latitude");
+			Object lonObject = args.get("longitude");
+			Object ipObject = args.get("ipaddress");
 
-				String location = null;
-				String ipAddress = null;
+			String location = null;
+			String ipAddress = null;
 
-				if (latObject != null && lonObject != null) {
-					location = latObject.toString() + "," + lonObject.toString();
-				}
+			if (latObject != null && lonObject != null) {
+				location = latObject.toString() + "," + lonObject.toString();
+			}
+			Log.d(LCAT, "location string: " + location);
 
-				if (ipObject != null) {
-					ipAddress = ipObject.toString();
-				}
+			if (ipObject != null) {
+				ipAddress = ipObject.toString();
+			}
+			Log.d(LCAT, "ipAddress string: " + ipAddress);
 
-				Countly.sharedInstance().setLocation(null, null, location, ipAddress);
+			Countly.sharedInstance().setLocation(null, null, location, ipAddress);
 		}
 
 		@Kroll.method
@@ -413,30 +421,28 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 		}
 
 		@Kroll.method
+		public void viewSegments(String name, HashMap segments) {
+			Log.d(LCAT, "View Send with segments called");
+
+			Countly.sharedInstance().recordView(name, segments);
+		}
+
+		@Kroll.method
 		public void userData(KrollDict args) {
 			Log.d(LCAT, "UserData Send called");
 
 			Object userDataObject = args.get("userData");
 			Object customUserDataObject = args.get("customUserData");
 
-			// set userData
-	    	HashMap<String, String> userData = (HashMap<String, String>) userDataObject;
+	    HashMap<String, String> userData = (HashMap<String, String>) userDataObject;
 
-			// START IF - has customData
-			if(customUserDataObject != null){
-
-				// set customUserData
-	        	HashMap<String, String> customUserData = (HashMap<String, String>) customUserDataObject;
-
+			if (customUserDataObject != null) {
+	      HashMap<String, String> customUserData = (HashMap<String, String>) customUserDataObject;
 				Countly.sharedInstance().setUserData(userData, customUserData);
 
-			}else{	// ELSE - no customData
-
+			} else {
 				Countly.sharedInstance().setUserData(userData);
-
 			}
-			// END IF - has customData
-
 		}
 
 		// Class to find instance of Module
