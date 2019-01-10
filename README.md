@@ -2,6 +2,12 @@
 
 Countly is an innovative, real-time, open source mobile analytics application. It collects data from mobile phones, and visualizes this information to analyze mobile application usage and end-user behavior. There are two parts of Countly: the server that collects and analyzes data, and mobile SDK that sends this data (for iOS & Android).
 
+## How to Build
+
+```
+appc run -p android
+```
+
 Countly:
 
 - [Countly (Countly)](https://count.ly)
@@ -29,7 +35,7 @@ Countly SDK Guides;
 ### Please log issues via github issues
 ### Any pull requests and suggestions welcome!
 ### Author: Dieskim of (Kiteplans.info)](https://www.kiteplans.info)
-### Development Sponsors: 
+### Development Sponsors:
 #### - Messaging: http://Hamsane.com - Friend who loves your way of working - Thanks!
 #### - Crash Reports: http://www.count.ly
 
@@ -42,7 +48,7 @@ https://github.com/dieskim/ly-count-appcelerator
 
 1. Go to: https://github.com/dieskim/countly-sdk-appcelerator-titanium-android
 2. Download: count.ly-messaging-android-x.x.x.zip
-3. Move Zip to root of your Application 
+3. Move Zip to root of your Application
 4. Build Application - Titanium will automatically extract the module
 
 ### Register your module with your application by editing `tiapp.xml` and adding your module.
@@ -123,7 +129,7 @@ if (pushType == "hasLink"){
 
 }else if (pushType == "hasReview"){
 
-// SHOW AN REVIEW ALERT HERE 
+// SHOW AN REVIEW ALERT HERE
 
 }else if (pushType == "hasMessage"){
 
@@ -279,7 +285,7 @@ Countly.startCrashReportingWithSegments(segments);
 - This crash type will NOT QUIT out of app in Development (shows red error box), but will QUIT out of app in Production.
 - Error will be logged on Javascript side and sent to native module to send to Countly
 - For this to work you for need to add the uncaughtException listener to the app
-- Then run the Countly.recordUncaughtException inside the 
+- Then run the Countly.recordUncaughtException inside the
 
 ```
 Ti.App.addEventListener('uncaughtException', function(exception) {
@@ -287,7 +293,7 @@ Ti.App.addEventListener('uncaughtException', function(exception) {
 Ti.API.log("Javascript Fatal Exception");   // remove if you want
 
 // send exception to Countly
-Countly.recordUncaughtException(exception);	
+Countly.recordUncaughtException(exception);
 
 });
 
@@ -325,7 +331,7 @@ Countly.addCrashLog(crashLog);
 Countly.crashTest(3);
 
 \\ Other Crash Tests - Do not exit out of app - get logged via Ti.App.addEventListener uncaughtException
-Countly.crashTest(1);	
+Countly.crashTest(1);
 Countly.crashTest(2);
 Countly.crashTest(4);
 ```

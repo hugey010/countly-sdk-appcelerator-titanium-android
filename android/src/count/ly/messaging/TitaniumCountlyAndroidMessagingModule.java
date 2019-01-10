@@ -286,6 +286,21 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 		}
 
 		@Kroll.method
+		public void startCrashReportingWithSegmentsAndDeviceId(HashMap segments, String deviceId) {
+			Log.d(LCAT, "startCrashReportingWithSegments");
+
+			// updates device id to match an actual user
+    	Countly.sharedInstance().changeDeviceId(DeviceId.Type.DEVELOPER_SUPPLIED, deviceId);
+
+			// enableCrashReporting
+			Countly.sharedInstance().enableCrashReporting();
+
+			// set setCustomCrashSegments
+			Countly.sharedInstance().setCustomCrashSegments(segments);
+		}
+
+
+		@Kroll.method
 		public void recordUncaughtException(HashMap args) {
 			Log.d(LCAT, "recordUncaughtException");
 
@@ -486,7 +501,6 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 		}
 
 		private static HashMap<String, String> jsonToHashMap(String t) throws JSONException {
-
 	        HashMap<String, String> map = new HashMap<String, String>();
 	        JSONObject jObject = new JSONObject(t);
 	        Iterator<?> keys = jObject.keys();
@@ -508,6 +522,12 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 			String OUDID = Countly.sharedInstance().getOUDID();
 
 			return OUDID;
+		}
+
+		@Kroll.method
+		public void changeDeviceId(String deviceId) {
+			Log.d(LCAT, "Change device id called");
+			Countly.sharedInstance().changeDeviceId(DeviceId.Type.DEVELOPER_SUPPLIED, deviceId);
 		}
 
 }

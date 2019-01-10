@@ -48,6 +48,8 @@ private:
 	static void view(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void recordHandledException(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void setLocation(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void startCrashReportingWithSegmentsAndDeviceId(const v8::FunctionCallbackInfo<v8::Value>&);
+	static void changeDeviceId(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void disableUpdateSessionRequests(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void event(const v8::FunctionCallbackInfo<v8::Value>&);
 	static void sendQueuedNotification(const v8::FunctionCallbackInfo<v8::Value>&);

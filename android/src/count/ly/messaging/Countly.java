@@ -679,7 +679,7 @@ public class Countly {
      * Changes current device id type to the one specified in parameter. Closes current session and
      * reopens new one with new id. Doesn't merge user profiles on the server
      * @param type Device ID type to change to
-     * @param deviceId Optional device ID for a case when type = DEVELOPER_SPECIFIED
+     * @param deviceId Optional device ID for a case when type = DEVELOPER_SUPPLIED
      */
     public void changeDeviceId(DeviceId.Type type, String deviceId) {
         if (Countly.sharedInstance().isLoggingEnabled()) {
