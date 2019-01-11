@@ -289,14 +289,14 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 		public void startCrashReportingWithSegmentsAndDeviceId(HashMap segments, String deviceId) {
 			Log.d(LCAT, "startCrashReportingWithSegments");
 
-			// updates device id to match an actual user
-    	Countly.sharedInstance().changeDeviceId(DeviceId.Type.DEVELOPER_SUPPLIED, deviceId);
-
 			// enableCrashReporting
 			Countly.sharedInstance().enableCrashReporting();
 
 			// set setCustomCrashSegments
 			Countly.sharedInstance().setCustomCrashSegments(segments);
+
+			// updates device id to match an actual user
+    	Countly.sharedInstance().changeDeviceId(DeviceId.Type.DEVELOPER_SUPPLIED, deviceId);
 		}
 
 
