@@ -57,11 +57,13 @@ public class DeviceId {
     }
 
     private void retrieveId (CountlyStore store) {
-        String storedId = store.getPreference(PREFERENCE_KEY_ID_ID);
-        if (storedId != null) {
-            this.id = storedId;
-            this.type = retrieveType(store, PREFERENCE_KEY_ID_TYPE);
-        }
+      // Never remember device ids.
+
+        // String storedId = store.getPreference(PREFERENCE_KEY_ID_ID);
+        // if (storedId != null) {
+            // this.id = storedId;
+            // this.type = retrieveType(store, PREFERENCE_KEY_ID_TYPE);
+        // }
     }
 
     /**
