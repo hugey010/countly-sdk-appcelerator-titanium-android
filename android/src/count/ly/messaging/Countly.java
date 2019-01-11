@@ -932,35 +932,15 @@ public class Countly {
 
     /**
      * Sets information about user. Possible keys are:
-     * <ul>
-     * <li>
      * name - (String) providing user's full name
-     * </li>
-     * <li>
      * username - (String) providing user's nickname
-     * </li>
-     * <li>
      * email - (String) providing user's email address
-     * </li>
-     * <li>
      * organization - (String) providing user's organization's name where user works
-     * </li>
-     * <li>
      * phone - (String) providing user's phone number
-     * </li>
-     * <li>
      * picture - (String) providing WWW URL to user's avatar or profile picture
-     * </li>
-     * <li>
      * picturePath - (String) providing local path to user's avatar or profile picture
-     * </li>
-     * <li>
      * gender - (String) providing user's gender as M for male and F for female
-     * </li>
-     * <li>
      * byear - (int) providing user's year of birth as integer
-     * </li>
-     * </ul>
      * @param data Map&lt;String, String&gt; with user data
      * @deprecated use {@link UserData#setUserData(Map)} to set data and {@link UserData#save()} to send it to server.
      */
@@ -972,48 +952,29 @@ public class Countly {
      * Sets information about user with custom properties.
      * In custom properties you can provide any string key values to be stored with user
      * Possible keys are:
-     * <ul>
-     * <li>
      * name - (String) providing user's full name
-     * </li>
-     * <li>
      * username - (String) providing user's nickname
-     * </li>
-     * <li>
      * email - (String) providing user's email address
-     * </li>
-     * <li>
      * organization - (String) providing user's organization's name where user works
-     * </li>
-     * <li>
      * phone - (String) providing user's phone number
-     * </li>
-     * <li>
      * picture - (String) providing WWW URL to user's avatar or profile picture
-     * </li>
-     * <li>
      * picturePath - (String) providing local path to user's avatar or profile picture
-     * </li>
-     * <li>
      * gender - (String) providing user's gender as M for male and F for female
-     * </li>
-     * <li>
      * byear - (int) providing user's year of birth as integer
-     * </li>
-     * </ul>
      * @param data Map&lt;String, String&gt; with user data
      * @param customdata Map&lt;String, String&gt; with custom key values for this user
      * @deprecated use {@link UserData#setUserData(Map, Map)} to set data and {@link UserData#save()}  to send it to server.
      */
     public synchronized Countly setUserData(Map<String, String> data, Map<String, String> customdata) {
         if (Countly.sharedInstance().isLoggingEnabled()) {
-            Log.d(Countly.TAG, "Setting user data");
+          Log.d(Countly.TAG, "Setting user data");
         }
-        UserData.setData(data);
-        if(customdata != null)
-            UserData.setCustomData(customdata);
-        connectionQueue_.sendUserData();
         UserData.clear();
+        UserData.setData(data);
+        if (customdata != null) {
+          UserData.setCustomData(customdata);
+        }
+        connectionQueue_.sendUserData();
         return this;
     }
 
@@ -1027,10 +988,11 @@ public class Countly {
         if (Countly.sharedInstance().isLoggingEnabled()) {
             Log.d(Countly.TAG, "Setting custom user data");
         }
-        if(customdata != null)
-            UserData.setCustomData(customdata);
-        connectionQueue_.sendUserData();
         UserData.clear();
+        if (customdata != null) {
+          UserData.setCustomData(customdata);
+        }
+        connectionQueue_.sendUserData();
         return this;
     }
 
