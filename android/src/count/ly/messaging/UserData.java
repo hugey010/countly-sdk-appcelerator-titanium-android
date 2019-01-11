@@ -40,7 +40,6 @@ public class UserData {
 
     final ConnectionQueue connectionQueue_;
 
-    //Public methods
     /**
      * Constructs a UserData object.
      * @param connectionQueue to process userdata requests
@@ -50,81 +49,42 @@ public class UserData {
     }
     /**
      * Sets information about user. Possible keys are:
-     * <ul>
-     * <li>
      * name - (String) providing user's full name
-     * </li>
-     * <li>
      * username - (String) providing user's nickname
-     * </li>
-     * <li>
      * email - (String) providing user's email address
-     * </li>
-     * <li>
      * organization - (String) providing user's organization's name where user works
-     * </li>
-     * <li>
      * phone - (String) providing user's phone number
-     * </li>
-     * <li>
      * picture - (String) providing WWW URL to user's avatar or profile picture
-     * </li>
-     * <li>
      * picturePath - (String) providing local path to user's avatar or profile picture
-     * </li>
-     * <li>
      * gender - (String) providing user's gender as M for male and F for female
-     * </li>
-     * <li>
      * byear - (int) providing user's year of birth as integer
-     * </li>
-     * </ul>
      * @param data Map&lt;String, String&gt; with user data
      */
     public void setUserData(Map<String, String> data) {
-            setUserData(data, null);
+        setUserData(data, null);
     }
 
     /**
      * Sets information about user with custom properties.
      * In custom properties you can provide any string key values to be stored with user
      * Possible keys are:
-     * <ul>
-     * <li>
      * name - (String) providing user's full name
-     * </li>
-     * <li>
      * username - (String) providing user's nickname
-     * </li>
-     * <li>
      * email - (String) providing user's email address
-     * </li>
-     * <li>
      * organization - (String) providing user's organization's name where user works
-     * </li>
-     * <li>
      * phone - (String) providing user's phone number
-     * </li>
-     * <li>
      * picture - (String) providing WWW URL to user's avatar or profile picture
-     * </li>
-     * <li>
      * picturePath - (String) providing local path to user's avatar or profile picture
-     * </li>
-     * <li>
      * gender - (String) providing user's gender as M for male and F for female
-     * </li>
-     * <li>
      * byear - (int) providing user's year of birth as integer
-     * </li>
-     * </ul>
      * @param data Map&lt;String, String&gt; with user data
      * @param customdata Map&lt;String, String&gt; with custom key values for this user
      */
     public void setUserData(Map<String, String> data, Map<String, String> customdata) {
         UserData.setData(data);
-        if(customdata != null)
-            UserData.setCustomData(customdata);
+        if (customdata != null) {
+          UserData.setCustomData(customdata);
+        }
     }
 
     /**
@@ -133,8 +93,9 @@ public class UserData {
      * @param customdata Map&lt;String, String&gt; with custom key values for this user
      */
     public void setCustomUserData(Map<String, String> customdata) {
-        if(customdata != null)
-            UserData.setCustomData(customdata);
+        if (customdata != null) {
+          UserData.setCustomData(customdata);
+        }
     }
 
     /**

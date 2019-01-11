@@ -969,12 +969,12 @@ public class Countly {
         if (Countly.sharedInstance().isLoggingEnabled()) {
           Log.d(Countly.TAG, "Setting user data");
         }
-        UserData.clear();
         UserData.setData(data);
         if (customdata != null) {
           UserData.setCustomData(customdata);
         }
         connectionQueue_.sendUserData();
+        UserData.clear();
         return this;
     }
 
