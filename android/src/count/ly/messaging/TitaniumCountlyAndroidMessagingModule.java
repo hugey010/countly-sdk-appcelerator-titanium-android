@@ -362,17 +362,19 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 		}
 
 		@Kroll.method
-		public void view(String name) {
+		public void view(KrollDict args) {
 			Log.d(LCAT, "View Send called");
 
-			Countly.sharedInstance().recordView(name);
-		}
+			Object nameObject = args.get("name");
+			String name = nameObject.toString();
 
-		@Kroll.method
-		public void viewSegments(String name, HashMap segments) {
-			Log.d(LCAT, "View Send with segments called");
-
-			Countly.sharedInstance().recordView(name, segments);
+			Object segmentationObject = args.get("segmentation");
+			if (segmentationObject != null) {
+				HashMap<String, String> segmentation = (HashMap<String, String>) segmentationObject;
+				Countly.sharedInstance().recordView(name, segmentation);
+			} else {
+				Countly.sharedInstance().recordView(name);
+			}
 		}
 
 		@Kroll.method
