@@ -22,6 +22,7 @@ THE SOFTWARE.
 package count.ly.messaging;
 
 import android.content.Context;
+import android.util.Log;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,7 +33,9 @@ import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
-import org.json.simple.JSONObject;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * ConnectionQueue queues session and event data and periodically sends that data to
@@ -412,10 +415,16 @@ public class ConnectionQueue {
                 + "&sdk_name=" + Countly.COUNTLY_SDK_NAME;
       if (segmentation_ != null) {
         JSONObject jsonObject = new JSONObject();
-        for (Map.Entry<String, String> seg : segmentation_.entrySet()) {
+        try {
+          for (Map.Entry<String, String> seg : segmentation_.entrySet()) {
             jsonObject.put(seg.getKey(), seg.getValue());
+          }
+          result = result + "&segmentation=" + ConnectionProcessor.urlEncodeString(jsonObject.toString());
+        } catch (JSONException e) {
+            if (Countly.sharedInstance().isLoggingEnabled()) {
+                Log.w(Countly.TAG, "Got exception converting segmentation to JSON", e);
+            }
         }
-        result = result + "&segmentation=" + ConnectionProcessor.urlEncodeString(jsonObject.toString());
       }
       return result;
     }
