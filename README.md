@@ -5,7 +5,7 @@ Countly is an innovative, real-time, open source mobile analytics application. I
 ## How to Build
 
 ```
-appc run --platform android --project-dir .\android --log-level trace --build-only
+ti build --platform android --project-dir .\android --log-level trace --build-only
 ```
 
 Countly:

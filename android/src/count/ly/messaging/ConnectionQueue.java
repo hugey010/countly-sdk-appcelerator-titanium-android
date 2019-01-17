@@ -32,6 +32,7 @@ import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
+import org.json.simple.JSONObject;
 
 /**
  * ConnectionQueue queues session and event data and periodically sends that data to
@@ -410,9 +411,11 @@ public class ConnectionQueue {
                 + "&sdk_version=" + Countly.COUNTLY_SDK_VERSION_STRING
                 + "&sdk_name=" + Countly.COUNTLY_SDK_NAME;
       if (segmentation_ != null) {
+        JSONObject jsonObject = new JSONObject();
         for (Map.Entry<String, String> seg : segmentation_.entrySet()) {
-          result = result + "&" + seg.getKey() + "=" + seg.getValue();
+            jsonObject.put(seg.getKey(), seg.getValue());
         }
+        result = result + "&segmentation=" + ConnectionProcessor.urlEncodeString(jsonObject.toString());
       }
       return result;
     }
