@@ -231,7 +231,24 @@ public class Countly {
      * @throws java.lang.IllegalStateException if the Countly SDK has already been initialized
      */
     public Countly init(final Context context, final String serverURL, final String appKey) {
-        return init(context, serverURL, appKey, null, OpenUDIDAdapter.isOpenUDIDAvailable() ? DeviceId.Type.OPEN_UDID : DeviceId.Type.ADVERTISING_ID);
+        return init(context, serverURL, appKey, null, OpenUDIDAdapter.isOpenUDIDAvailable() ? DeviceId.Type.OPEN_UDID : DeviceId.Type.ADVERTISING_ID, null);
+    }
+
+    /**
+     * Initializes the Countly SDK. Call from your main Activity's onCreate() method.
+     * Must be called before other SDK methods can be used.
+     * Device ID is supplied by OpenUDID service if available, otherwise Advertising ID is used.
+     * BE CAUTIOUS!!!! If neither OpenUDID, nor Advertising ID is available, Countly will ignore this user.
+     * @param context application context
+     * @param serverURL URL of the Countly server to submit data to; use "https://try.count.ly" for Countly trial server
+     * @param appKey app key for the application being tracked; find in the Countly Dashboard under Management &gt; Applications
+     * @param segmentation segmentation dictionary to associate with the session, can be null
+     * @return Countly instance for easy method chaining
+     * @throws java.lang.IllegalArgumentException if context, serverURL, appKey, or deviceID are invalid
+     * @throws java.lang.IllegalStateException if the Countly SDK has already been initialized
+     */
+    public Countly init(final Context context, final String serverURL, final String appKey, final Map<String, String> segmentation) {
+        return init(context, serverURL, appKey, null, OpenUDIDAdapter.isOpenUDIDAvailable() ? DeviceId.Type.OPEN_UDID : DeviceId.Type.ADVERTISING_ID, segmentation);
     }
 
     /**
@@ -245,8 +262,8 @@ public class Countly {
      * @throws IllegalArgumentException if context, serverURL, appKey, or deviceID are invalid
      * @throws IllegalStateException if init has previously been called with different values during the same application instance
      */
-    public Countly init(final Context context, final String serverURL, final String appKey, final String deviceID) {
-        return init(context, serverURL, appKey, deviceID, null);
+    public Countly init(final Context context, final String serverURL, final String appKey, final String deviceID, final Map<String, String> segmentation) {
+        return init(context, serverURL, appKey, deviceID, null, segmentation);
     }
 
     /**
@@ -261,8 +278,8 @@ public class Countly {
      * @throws IllegalArgumentException if context, serverURL, appKey, or deviceID are invalid
      * @throws IllegalStateException if init has previously been called with different values during the same application instance
      */
-    public synchronized Countly init(final Context context, final String serverURL, final String appKey, final String deviceID, DeviceId.Type idMode) {
-        return init(context, serverURL, appKey, deviceID, idMode, -1, null, null, null, null);
+    public synchronized Countly init(final Context context, final String serverURL, final String appKey, final String deviceID, DeviceId.Type idMode, final Map<String, String> segmentation) {
+        return init(context, serverURL, appKey, deviceID, idMode, -1, null, null, null, null, segmentation);
     }
 
 
@@ -284,7 +301,7 @@ public class Countly {
      * @throws IllegalStateException if init has previously been called with different values during the same application instance
      */
     public synchronized Countly init(final Context context, String serverURL, final String appKey, final String deviceID, DeviceId.Type idMode,
-                                     int starRatingLimit, CountlyStarRating.RatingCallback starRatingCallback, String starRatingTextTitle, String starRatingTextMessage, String starRatingTextDismiss) {
+                                     int starRatingLimit, CountlyStarRating.RatingCallback starRatingCallback, String starRatingTextTitle, String starRatingTextMessage, String starRatingTextDismiss, final Map<String, String> segmentation) {
 
         if (context == null) {
             throw new IllegalArgumentException("valid context is required in Countly init, but was provided 'null'");
@@ -373,7 +390,6 @@ public class Countly {
                 deviceIdInstance = new DeviceId(countlyStore, idMode);
             }
 
-
             if (Countly.sharedInstance().isLoggingEnabled()) {
                 Log.d(Countly.TAG, "Currently cached advertising ID [" + countlyStore.getCachedAdvertisingId() + "]");
             }
@@ -385,12 +401,13 @@ public class Countly {
             connectionQueue_.setAppKey(appKey);
             connectionQueue_.setCountlyStore(countlyStore);
             connectionQueue_.setDeviceId(deviceIdInstance);
+            connectionQueue_.setCustomSegments(segmentation);
 
             eventQueue_ = new EventQueue(countlyStore);
 
             //do star rating related things
 
-            if(getConsent(CountlyFeatureNames.starRating)) {
+            if (getConsent(CountlyFeatureNames.starRating)) {
                 CountlyStarRating.registerAppSession(context, starRatingCallback_);
             }
         }
@@ -400,7 +417,7 @@ public class Countly {
         // context is allowed to be changed on the second init call
         connectionQueue_.setContext(context_);
 
-        if(requiresConsent) {
+        if (requiresConsent) {
             //send collected consent changes that were made before initialization
             if (collectedConsentChanges.size() != 0) {
                 for (String changeItem : collectedConsentChanges) {
@@ -590,7 +607,7 @@ public class Countly {
 
         CrashDetails.inForeground();
 
-        if(autoViewTracker){
+        if (autoViewTracker) {
             String usedActivityName;
 
             if(automaticTrackingShouldUseShortName){
@@ -915,7 +932,8 @@ public class Countly {
             Log.d(Countly.TAG, "Recording segmented view with name: [" + viewName + "]");
       }
 
-      reportViewDuration();
+      reportViewDuration(segmentation);
+
       lastView = viewName;
       lastViewStart = Countly.currentTimestamp();
       HashMap<String, String> segments = new HashMap<String, String>(segmentation);
@@ -1395,21 +1413,29 @@ public class Countly {
      * Reports duration of last view
      */
     private void reportViewDuration(){
-        if(lastView != null && lastViewStart <= 0) {
+        reportViewDuration(null);
+    }
+
+    /**
+     * Reports duration of last view
+     * @param segmentation any extra segmentation to report with last view.
+     */
+    private void reportViewDuration(final Map<String, String> segmentation) {
+        if (lastView != null && lastViewStart <= 0) {
             if (Countly.sharedInstance().isLoggingEnabled()) {
                 Log.e(Countly.TAG, "Last view start value is not normal: [" + lastViewStart + "]");
             }
         }
 
-        if(!getConsent(CountlyFeatureNames.views)) {
+        if (!getConsent(CountlyFeatureNames.views)) {
             return;
         }
 
         //only record view if the view name is not null and if it has a reasonable duration
         //if the lastViewStart is equal to 0, the duration would be set to the current timestamp
         //and therefore will be ignored
-        if(lastView != null && lastViewStart > 0){
-            HashMap<String, String> segments = new HashMap<>();
+        if (lastView != null && lastViewStart > 0) {
+            HashMap<String, String> segments = new HashMap<>(segmentation);
             segments.put("name", lastView);
             segments.put("dur", String.valueOf(Countly.currentTimestamp()-lastViewStart));
             segments.put("segment", "Android");

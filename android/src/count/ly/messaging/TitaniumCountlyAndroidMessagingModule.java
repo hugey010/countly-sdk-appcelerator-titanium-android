@@ -83,13 +83,25 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 		}
 
 		@Kroll.method
-		public void start(String apiKey,String url) {
+		public void start(KrollDict args) {// String apiKey,String url) {
 			Log.d(LCAT, "Start called");
+
+			Object apiKeyObject = args.get("apiKey");
+			String apiKey = apiKeyObject.toString();
+
+			Object urlObject = args.get("url");
+			String url = urlObject.toString();
+
+			Object segmentationObject = args.get("segmentation");
 
 			Activity currentActivity = TiApplication.getAppCurrentActivity();
 
-			Countly.sharedInstance().init(currentActivity,
-					url, apiKey);
+			if (segmentationObject != null) {
+	    	HashMap<String, String> segmentation = (HashMap<String, String>) segmentationObject;
+				Countly.sharedInstance().init(currentActivity, url, apiKey, segmentation);
+			} else {
+				Countly.sharedInstance().init(currentActivity, url, apiKey, null);
+			}
 			Countly.sharedInstance().onStart(currentActivity);
 		}
 
@@ -100,7 +112,7 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 			Activity currentActivity = TiApplication.getAppCurrentActivity();
 
 			Countly.sharedInstance()
-			.init(TiApplication.getAppCurrentActivity(),url, apiKey, null, DeviceId.Type.ADVERTISING_ID)
+			.init(TiApplication.getAppCurrentActivity(),url, apiKey, null, DeviceId.Type.ADVERTISING_ID, null)
 			.initMessaging(currentActivity, TiApplication.getAppRootOrCurrentActivity().getClass(), projectID, Countly.CountlyMessagingMode.PRODUCTION);
 
 			Countly.sharedInstance().onStart(currentActivity);
@@ -113,7 +125,7 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 			Activity currentActivity = TiApplication.getAppCurrentActivity();
 
 			Countly.sharedInstance()
-			.init(currentActivity ,url, apiKey, null, DeviceId.Type.ADVERTISING_ID)
+			.init(currentActivity ,url, apiKey, null, DeviceId.Type.ADVERTISING_ID, null)
 			.initMessaging(currentActivity, TiApplication.getAppRootOrCurrentActivity().getClass(), projectID, Countly.CountlyMessagingMode.TEST);
 
 			Countly.sharedInstance().onStart(currentActivity);

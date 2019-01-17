@@ -173,7 +173,7 @@ public class CountlyMessaging extends WakefulBroadcastReceiver {
         if (serverURL == null || appKey == null) {
             return false;
         } else {
-            Countly.sharedInstance().init(context, serverURL, appKey, deviceID, idMode);
+            Countly.sharedInstance().init(context, serverURL, appKey, deviceID, idMode, null);
             try {
                 activityClass = (Class<? extends Activity>) Class.forName(activityClassName);
             } catch (ClassNotFoundException e) {
@@ -247,7 +247,7 @@ public class CountlyMessaging extends WakefulBroadcastReceiver {
             }
             return "";
         }
-        
+
         String registeredSender = preferences.getString(PROPERTY_REGISTRATION_SENDER, "");
         if (!registeredSender.equals(sender)) {
             if (Countly.sharedInstance().isLoggingEnabled()) {
@@ -255,7 +255,7 @@ public class CountlyMessaging extends WakefulBroadcastReceiver {
             }
             return "";
         }
-        
+
         return registrationId;
     }
 

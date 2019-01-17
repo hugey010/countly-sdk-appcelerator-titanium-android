@@ -28,6 +28,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -51,6 +52,7 @@ public class ConnectionQueue {
     private Future<?> connectionProcessorFuture_;
     private DeviceId deviceId_;
     private SSLContext sslContext_;
+    private Map<String, String> segmentation_;
 
     // Getters are for unit testing
     String getAppKey() {
@@ -101,6 +103,14 @@ public class ConnectionQueue {
 
     public void setDeviceId(DeviceId deviceId) {
         this.deviceId_ = deviceId;
+    }
+
+    Map<String, String> getCustomSegments() {
+      return segmentation_;
+    }
+
+    void setCustomSegments(final Map<String, String> segmentation) {
+      this.segmentation_ = segmentation;
     }
 
     /**
@@ -310,13 +320,13 @@ public class ConnectionQueue {
     void sendUserData() {
         checkInternalState();
 
-        if(!Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.users)){
+        if (!Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.users)) {
             return;
         }
 
         String userdata = UserData.getDataForRequest();
 
-        if(!userdata.equals("")){
+        if (!userdata.equals("")) {
             String data = prepareCommonRequestData()
                     + userdata;
             store_.addConnection(data);
@@ -373,10 +383,6 @@ public class ConnectionQueue {
     void recordEvents(final String events) {
         checkInternalState();
 
-        ////////////////////////////////////////////////////
-        ///CONSENT FOR EVENTS IS CHECKED ON EVENT CREATION//
-        ////////////////////////////////////////////////////
-
         final String data = prepareCommonRequestData()
                           + "&events=" + events;
 
@@ -396,13 +402,19 @@ public class ConnectionQueue {
     }
 
     private String prepareCommonRequestData(){
-        return "app_key=" + appKey_
+      String result = "app_key=" + appKey_
                 + "&timestamp=" + Countly.currentTimestampMs()
                 + "&hour=" + Countly.currentHour()
                 + "&dow=" + Countly.currentDayOfWeek()
                 + "&tz=" + DeviceInfo.getTimezoneOffset()
                 + "&sdk_version=" + Countly.COUNTLY_SDK_VERSION_STRING
                 + "&sdk_name=" + Countly.COUNTLY_SDK_NAME;
+      if (segmentation_ != null) {
+        for (Map.Entry<String, String> seg : segmentation_.entrySet()) {
+          result = result + "&" + seg.getKey() + "=" + seg.getValue();
+        }
+      }
+      return result;
     }
 
     private String prepareLocationData(CountlyStore cs, boolean canSendEmptyWithNoConsent){
