@@ -114,7 +114,9 @@ public class ConnectionQueue {
     }
 
     void setCustomSegments(final Map<String, String> segmentation) {
-      this.segmentation_ = segmentation;
+      // TODO: this isn't segmented correctly by countly yet
+      // just makes extra noise atm
+      // this.segmentation_ = segmentation;
     }
 
     /**
@@ -149,7 +151,7 @@ public class ConnectionQueue {
         boolean dataAvailable = false;//will only send data if there is something valuable to send
         String data = prepareCommonRequestData();
 
-        if(Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.sessions)) {
+        if (Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.sessions)) {
             //add session data if consent given
             data += "&begin_session=1"
                     + "&metrics=" + DeviceInfo.getMetrics(context_);//can be only sent with begin session
@@ -159,29 +161,27 @@ public class ConnectionQueue {
         CountlyStore cs = getCountlyStore();
         String locationData = prepareLocationData(cs, false);
 
-        if(!locationData.isEmpty()){
+        if (!locationData.isEmpty()) {
             data += locationData;
             dataAvailable = true;
         }
 
-        if(Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.attribution)) {
-            //add attribution data if consent given
-            if (Countly.sharedInstance().isAttributionEnabled) {
-                String cachedAdId = store_.getCachedAdvertisingId();
+        if (Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.attribution)) {
+          //add attribution data if consent given
+          if (Countly.sharedInstance().isAttributionEnabled) {
+            String cachedAdId = store_.getCachedAdvertisingId();
 
-                if (!cachedAdId.isEmpty()) {
-                    data += "&aid=" + ConnectionProcessor.urlEncodeString("{\"adid\":\"" + cachedAdId + "\"}");
-
-                    dataAvailable = true;
-                }
+            if (!cachedAdId.isEmpty()) {
+              data += "&aid=" + ConnectionProcessor.urlEncodeString("{\"adid\":\"" + cachedAdId + "\"}");
+              dataAvailable = true;
             }
+          }
         }
 
         Countly.sharedInstance().isBeginSessionSent = true;
-
-        if(dataAvailable) {
-            store_.addConnection(data);
-            tick();
+        if (dataAvailable) {
+          store_.addConnection(data);
+          tick();
         }
     }
 
@@ -193,29 +193,29 @@ public class ConnectionQueue {
      */
     void updateSession(final int duration) {
         checkInternalState();
+
         if (duration > 0) {
             boolean dataAvailable = false;//will only send data if there is something valuable to send
             String data = prepareCommonRequestData();
 
-            if(Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.sessions)) {
-                data += "&session_duration=" + duration;
-                dataAvailable = true;
+            if (Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.sessions)) {
+              data += "&session_duration=" + duration;
+              dataAvailable = true;
             }
 
-            if(Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.attribution)) {
-                if (Countly.sharedInstance().isAttributionEnabled) {
-                    String cachedAdId = store_.getCachedAdvertisingId();
-
-                    if (!cachedAdId.isEmpty()) {
-                        data += "&aid=" + ConnectionProcessor.urlEncodeString("{\"adid\":\"" + cachedAdId + "\"}");
-                        dataAvailable = true;
-                    }
+            if (Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.attribution)) {
+              if (Countly.sharedInstance().isAttributionEnabled) {
+                String cachedAdId = store_.getCachedAdvertisingId();
+                if (!cachedAdId.isEmpty()) {
+                  data += "&aid=" + ConnectionProcessor.urlEncodeString("{\"adid\":\"" + cachedAdId + "\"}");
+                  dataAvailable = true;
                 }
+              }
             }
 
-            if(dataAvailable) {
-                store_.addConnection(data);
-                tick();
+            if (dataAvailable) {
+              store_.addConnection(data);
+              tick();
             }
         }
     }
@@ -223,20 +223,19 @@ public class ConnectionQueue {
     public void changeDeviceId (String deviceId, final int duration) {
         checkInternalState();
 
-        if(!Countly.sharedInstance().anyConsentGiven()){
-            //no consent set, aborting
-            return;
+        if (!Countly.sharedInstance().anyConsentGiven()) {
+          //no consent set, aborting
+          return;
         }
 
         String data = prepareCommonRequestData();
 
-        if(Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.sessions)) {
-            data += "&session_duration=" + duration;
+        if (Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.sessions)) {
+          data += "&session_duration=" + duration;
         }
 
         // !!!!! THIS SHOULD ALWAYS BE ADDED AS THE LAST FIELD, OTHERWISE MERGING BREAKS !!!!!
         data += "&device_id=" + ConnectionProcessor.urlEncodeString(deviceId);
-
         store_.addConnection(data);
         tick();
     }
@@ -244,8 +243,8 @@ public class ConnectionQueue {
     public void tokenSession(String token, Countly.CountlyMessagingMode mode) {
         checkInternalState();
 
-        if(!Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.push)){
-            return;
+        if (!Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.push)) {
+          return;
         }
 
         final String data = prepareCommonRequestData()
@@ -295,7 +294,7 @@ public class ConnectionQueue {
             dataAvailable = true;
         }
 
-        if(dataAvailable) {
+        if (dataAvailable) {
             store_.addConnection(data);
             tick();
         }
@@ -308,12 +307,9 @@ public class ConnectionQueue {
         checkInternalState();
 
         String data = prepareCommonRequestData();
-
         CountlyStore cs = getCountlyStore();
         data += prepareLocationData(cs, true);
-
         store_.addConnection(data);
-
         tick();
     }
 
@@ -329,12 +325,10 @@ public class ConnectionQueue {
         }
 
         String userdata = UserData.getDataForRequest();
-
         if (!userdata.equals("")) {
             String data = prepareCommonRequestData()
                     + userdata;
             store_.addConnection(data);
-
             tick();
         }
     }
@@ -347,11 +341,11 @@ public class ConnectionQueue {
     void sendReferrerData(String referrer) {
         checkInternalState();
 
-        if(Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.attribution)) {
+        if (Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.attribution)) {
             return;
         }
 
-        if(referrer != null){
+        if (referrer != null) {
             String data = prepareCommonRequestData()
                     + referrer;
             store_.addConnection(data);
@@ -367,15 +361,13 @@ public class ConnectionQueue {
     void sendCrashReport(String error, boolean nonfatal) {
         checkInternalState();
 
-        if(!Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.crashes)){
+        if (!Countly.sharedInstance().getConsent(Countly.CountlyFeatureNames.crashes)) {
             return;
         }
 
         final String data = prepareCommonRequestData()
                           + "&crash=" + ConnectionProcessor.urlEncodeString(CrashDetails.getCrashData(context_, error, nonfatal));
-
         store_.addConnection(data);
-
         tick();
     }
 

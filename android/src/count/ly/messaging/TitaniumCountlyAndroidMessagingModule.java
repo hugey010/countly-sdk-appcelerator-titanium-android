@@ -48,11 +48,7 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 
 	// set vars
 	public static Message message;
-
 	private static WeakReference<TitaniumCountlyAndroidMessagingModule> lastInstance;
-
-	// You can define constants with @Kroll.constant, for example:
-	// @Kroll.constant public static final String EXTERNAL_NAME = value;
 
 	public TitaniumCountlyAndroidMessagingModule()
 	{
@@ -64,417 +60,418 @@ public class TitaniumCountlyAndroidMessagingModule extends KrollModule
 	public static void onAppCreate(TiApplication app)
 	{
 		Log.d(LCAT, "inside onAppCreate");
-		// put module init code that needs to run when the application is created
 	}
 
-	// Methods
-		@Kroll.method
-		public void enableDebug() {
-			Log.d(LCAT, "Enable Debug called");
+	@Kroll.method
+	public void enableDebug() {
+		Log.d(LCAT, "Enable Debug called");
+		Countly.sharedInstance().setLoggingEnabled(true);
+	}
 
-			Countly.sharedInstance().setLoggingEnabled(true);
-		}
+	@Kroll.method
+	public void disableUpdateSessionRequests() {
+		Log.d(LCAT, "Disable update session requests called");
+		Countly.sharedInstance().setDisableUpdateSessionRequests(true);
+	}
 
-		@Kroll.method
-		public void disableUpdateSessionRequests() {
-			Log.d(LCAT, "Disable update session requests called");
+	@Kroll.method
+	public void start(KrollDict args) {// String apiKey,String url) {
+		Log.d(LCAT, "Start called");
 
-			Countly.sharedInstance().setDisableUpdateSessionRequests(true);
-		}
+		Object apiKeyObject = args.get("apiKey");
+		String apiKey = apiKeyObject.toString();
 
-		@Kroll.method
-		public void start(KrollDict args) {// String apiKey,String url) {
-			Log.d(LCAT, "Start called");
+		Object urlObject = args.get("url");
+		String url = urlObject.toString();
 
-			Object apiKeyObject = args.get("apiKey");
-			String apiKey = apiKeyObject.toString();
+		Object segmentationObject = args.get("segmentation");
 
-			Object urlObject = args.get("url");
-			String url = urlObject.toString();
+		Activity currentActivity = TiApplication.getAppCurrentActivity();
 
-			Object segmentationObject = args.get("segmentation");
-
-			Activity currentActivity = TiApplication.getAppCurrentActivity();
-
-			if (segmentationObject != null) {
-	    	HashMap<String, String> segmentation = (HashMap<String, String>) segmentationObject;
+		if (segmentationObject != null) {
+    	HashMap<String, String> segmentation = (HashMap<String, String>) segmentationObject;
+			if (segmentation.size() > 0) {
 				Countly.sharedInstance().init(currentActivity, url, apiKey, segmentation);
 			} else {
 				Countly.sharedInstance().init(currentActivity, url, apiKey, null);
 			}
-			Countly.sharedInstance().onStart(currentActivity);
+		} else {
+			Countly.sharedInstance().init(currentActivity, url, apiKey, null);
 		}
+		Countly.sharedInstance().onStart(currentActivity);
+	}
 
-		@Kroll.method
-		public void startMessaging(String apiKey,String url,String projectID) {
-			Log.d(LCAT, "Start Messaging called");
+	@Kroll.method
+	public void startMessaging(String apiKey,String url,String projectID) {
+		Log.d(LCAT, "Start Messaging called");
 
-			Activity currentActivity = TiApplication.getAppCurrentActivity();
+		Activity currentActivity = TiApplication.getAppCurrentActivity();
 
-			Countly.sharedInstance()
-			.init(TiApplication.getAppCurrentActivity(),url, apiKey, null, DeviceId.Type.ADVERTISING_ID, null)
-			.initMessaging(currentActivity, TiApplication.getAppRootOrCurrentActivity().getClass(), projectID, Countly.CountlyMessagingMode.PRODUCTION);
+		Countly.sharedInstance()
+		.init(TiApplication.getAppCurrentActivity(),url, apiKey, null, DeviceId.Type.ADVERTISING_ID, null)
+		.initMessaging(currentActivity, TiApplication.getAppRootOrCurrentActivity().getClass(), projectID, Countly.CountlyMessagingMode.PRODUCTION);
 
-			Countly.sharedInstance().onStart(currentActivity);
+		Countly.sharedInstance().onStart(currentActivity);
+	}
+
+	@Kroll.method
+	public void startMessagingTest(String apiKey,String url,String projectID) {
+		Log.d(LCAT, "Start Messaging Test called");
+
+		Activity currentActivity = TiApplication.getAppCurrentActivity();
+
+		Countly.sharedInstance()
+		.init(currentActivity ,url, apiKey, null, DeviceId.Type.ADVERTISING_ID, null)
+		.initMessaging(currentActivity, TiApplication.getAppRootOrCurrentActivity().getClass(), projectID, Countly.CountlyMessagingMode.TEST);
+
+		Countly.sharedInstance().onStart(currentActivity);
+	}
+
+	// Class to check for Listener Added
+	public void listenerAdded(String type, int count, KrollProxy proxy){
+		super.listenerAdded(type, count, proxy);
+		Log.i(LCAT, "listenerAdded");
+		try {
+			sendQueuedNotification();
+		} catch (JSONException e) {
+			Log.d(LCAT, "sendQueuedNotificationError" + e);
 		}
+	}
 
-		@Kroll.method
-		public void startMessagingTest(String apiKey,String url,String projectID) {
-			Log.d(LCAT, "Start Messaging Test called");
+	// Class to processCallBack on Module
+	public static void processPushCallBack() {
+		Log.d(LCAT, "processPushCallBack");
 
-			Activity currentActivity = TiApplication.getAppCurrentActivity();
-
-			Countly.sharedInstance()
-			.init(currentActivity ,url, apiKey, null, DeviceId.Type.ADVERTISING_ID, null)
-			.initMessaging(currentActivity, TiApplication.getAppRootOrCurrentActivity().getClass(), projectID, Countly.CountlyMessagingMode.TEST);
-
-			Countly.sharedInstance().onStart(currentActivity);
+		TitaniumCountlyAndroidMessagingModule module = getModule();
+		if (module == null) {
+			return;
 		}
+		module.sendNotification();
+	}
 
-		// Class to check for Listener Added
-		public void listenerAdded(String type, int count, KrollProxy proxy){
-			super.listenerAdded(type, count, proxy);
-			Log.i(LCAT, "listenerAdded");
-			try {
-				sendQueuedNotification();
-			} catch (JSONException e) {
-				Log.d(LCAT, "sendQueuedNotificationError" + e);
+	@Kroll.method
+	public void sendNotification() {
+		Log.d(LCAT, "Send Notification");
+
+		if (hasListeners("receivePush")) {
+			Log.d(LCAT, "Has Listener: receivePush");
+
+			Message message = TitaniumCountlyAndroidMessagingModule.message;
+			HashMap pushMessage = new HashMap();
+			pushMessage.put("id", message.getId());
+			pushMessage.put("message", message.getNotificationMessage());
+
+			if (message.hasLink()) {
+				pushMessage.put("type", "hasLink");
+				pushMessage.put("link", message.getLink());
+			} else if (message.hasReview()) {
+				pushMessage.put("type", "hasReview");
+			} else if (message.hasMessage()) {
+				pushMessage.put("type", "hasMessage");
 			}
-		}
 
-		// Class to processCallBack on Module
-		public static void processPushCallBack() {
-			Log.d(LCAT, "processPushCallBack");
-
-			TitaniumCountlyAndroidMessagingModule module = getModule();
-			if (module == null) {
-				return;
+			if (message.hasSoundUri()) {
+				pushMessage.put("sound", message.getSoundUri());
 			}
-			module.sendNotification();
+
+			pushMessage.put("data", bundleToHashMap(message.getData()));
+
+			Log.d(LCAT, "pushMessage" + pushMessage);
+	    fireEvent("receivePush", pushMessage);
+
+	    TiProperties appProperties = TiApplication.getInstance().getAppProperties();
+	    appProperties.setString("pushMessage", "");
+		} else {
+			Log.d(LCAT, "No Listener receivePush found");
 		}
+	}
 
-		@Kroll.method
-		public void sendNotification() {
-			Log.d(LCAT, "Send Notification");
+	@Kroll.method
+	public void sendQueuedNotification() throws JSONException {
+		Log.d(LCAT, "Send Queued Notification Start");
 
-			if (hasListeners("receivePush")) {
-				Log.d(LCAT, "Has Listener: receivePush");
+		if (hasListeners("receivePush")) {
+			Log.d(LCAT, "Has Listener: receivePush");
 
-				Message message = TitaniumCountlyAndroidMessagingModule.message;
-				HashMap pushMessage = new HashMap();
-				pushMessage.put("id", message.getId());
-				pushMessage.put("message", message.getNotificationMessage());
+			TiProperties appProperties = TiApplication.getInstance().getAppProperties();
+			String pushMessageString = appProperties.getString("pushMessage", "");
 
-				if (message.hasLink()) {
-					pushMessage.put("type", "hasLink");
-					pushMessage.put("link", message.getLink());
-				} else if (message.hasReview()) {
-					pushMessage.put("type", "hasReview");
-				} else if (message.hasMessage()) {
-					pushMessage.put("type", "hasMessage");
-				}
+			Log.d(LCAT, "pushMessage" + pushMessageString);
 
-				if (message.hasSoundUri()) {
-					pushMessage.put("sound", message.getSoundUri());
-				}
+			if (pushMessageString != null && !pushMessageString.isEmpty()){
+				Log.d(LCAT, "pushMessage Has Content");
 
-				pushMessage.put("data", bundleToHashMap(message.getData()));
+			  HashMap<String,String> pushMessage = jsonToHashMap(pushMessageString);
+				Log.d(LCAT, "pushMessage Content: " + pushMessage);
 
-				Log.d(LCAT, "pushMessage" + pushMessage);
-		    fireEvent("receivePush", pushMessage);
-
-		    TiProperties appProperties = TiApplication.getInstance().getAppProperties();
-		    appProperties.setString("pushMessage", "");
+			  fireEvent("receivePush", pushMessage);
+			  appProperties.setString("pushMessage",  "");
 			} else {
-				Log.d(LCAT, "No Listener receivePush found");
+				Log.d(LCAT, "No qued pushMessage");
 			}
+		} else {
+			Log.d(LCAT, "No Listener pushCallBack found");
 		}
+	}
 
-		@Kroll.method
-		public void sendQueuedNotification() throws JSONException {
-			Log.d(LCAT, "Send Queued Notification Start");
+	@Kroll.method
+	public void recordPushAction(String messageId) {
+		Log.d(LCAT, "RecordPushAction");
 
-			if (hasListeners("receivePush")) {
-				Log.d(LCAT, "Has Listener: receivePush");
+		CountlyMessaging.recordMessageAction(messageId);
+	}
 
-				TiProperties appProperties = TiApplication.getInstance().getAppProperties();
-				String pushMessageString = appProperties.getString("pushMessage", "");
+	@Kroll.method
+	public void setLocation(KrollDict args) {
+		Log.d(LCAT, "SetLocation");
 
-				Log.d(LCAT, "pushMessage" + pushMessageString);
+		Object latObject = args.get("latitude");
+		Object lonObject = args.get("longitude");
+		Object ipObject = args.get("ipaddress");
 
-				if (pushMessageString != null && !pushMessageString.isEmpty()){
-					Log.d(LCAT, "pushMessage Has Content");
+		String location = null;
+		String ipAddress = null;
 
-				  HashMap<String,String> pushMessage = jsonToHashMap(pushMessageString);
-					Log.d(LCAT, "pushMessage Content: " + pushMessage);
+		if (latObject != null && lonObject != null) {
+			location = latObject.toString() + "," + lonObject.toString();
+		}
+		Log.d(LCAT, "location string: " + location);
 
-				  fireEvent("receivePush", pushMessage);
-				  appProperties.setString("pushMessage",  "");
+		if (ipObject != null) {
+			ipAddress = ipObject.toString();
+		}
+		Log.d(LCAT, "ipAddress string: " + ipAddress);
+
+		Countly.sharedInstance().setLocation(null, null, location, ipAddress);
+	}
+
+	@Kroll.method
+	public void stopCount() {
+		Log.d(LCAT, "Stop Count called");
+		Countly.sharedInstance().onStop();
+	}
+
+	@Kroll.method
+	public void startCrashReporting() {
+		Log.d(LCAT, "startCrashReporting");
+		Countly.sharedInstance().enableCrashReporting();
+	}
+
+	@Kroll.method
+	public void startCrashReportingWithSegments(HashMap segments) {
+		Log.d(LCAT, "startCrashReportingWithSegments");
+
+		// enableCrashReporting
+		Countly.sharedInstance().enableCrashReporting();
+
+		// set setCustomCrashSegments
+		Countly.sharedInstance().setCustomCrashSegments(segments);
+	}
+
+	@Kroll.method
+	public void startCrashReportingWithSegmentsAndDeviceId(HashMap segments, String deviceId) {
+		Log.d(LCAT, "startCrashReportingWithSegments");
+
+		// enableCrashReporting
+		Countly.sharedInstance().enableCrashReporting();
+
+		// set setCustomCrashSegments
+		Countly.sharedInstance().setCustomCrashSegments(segments);
+
+		// updates device id to match an actual user
+  	Countly.sharedInstance().changeDeviceId(DeviceId.Type.DEVELOPER_SUPPLIED, deviceId);
+	}
+
+	@Kroll.method
+	public void recordUncaughtException(HashMap args) {
+		Log.d(LCAT, "recordUncaughtException");
+
+		String exception = printMap(args);
+		Log.d(LCAT, exception);
+		Countly.sharedInstance().logJavascriptFatalException(exception);
+	}
+
+	@Kroll.method
+	public void recordHandledException(HashMap args) {
+		Log.d(LCAT, "recordHandledException");
+
+		String exception = printMap(args);
+		Log.d(LCAT, exception);
+		Countly.sharedInstance().logJavascriptNonFatalException(exception);
+	}
+
+	@Kroll.method
+	public void addCrashLog(HashMap crashLogMap) {
+		Log.d(LCAT, "addCrashLog");
+
+		String crashLog = printMap(crashLogMap);
+		Countly.sharedInstance().addCrashLog(crashLog);
+	}
+
+	public void stackOverflow() {
+	 	this.stackOverflow();
+	}
+
+	@Kroll.method
+	public void crashTest(int crashNumber) {
+		if (crashNumber == 1) {
+			Log.d(LCAT, "Running crashTest 1");
+
+			stackOverflow();
+		} else if (crashNumber == 2) {
+			Log.d(LCAT, "Running crashTest 2");
+
+			int test = 10/0;
+		} else if (crashNumber == 3) {
+			Log.d(LCAT, "Running crashTest 3");
+
+			while (true) {
+				Object[] o = null;
+				while (true) { o = new Object[] { o }; }
+			}
+		} else {
+			Log.d(LCAT, "Running crashTest 4");
+			throw new RuntimeException("This is a crash");
+		}
+	}
+
+	@Kroll.method
+	public void event(KrollDict args) {
+		Log.d(LCAT, "Event Send called");
+
+		Object keyObject = args.get("name");
+		Object countObject = args.get("count");
+		Object sumObject = args.get("sum");
+		Object segmentationObject = args.get("segmentation");
+		String key = keyObject.toString();
+		int count = (Integer) countObject;
+
+		if (segmentationObject != null) {
+    	HashMap<String, String> segmentation = (HashMap<String, String>) segmentationObject;
+			if (segmentation.size() > 0) {
+				if (sumObject != null) {
+	    		double sum = Double.parseDouble(sumObject.toString());
+	      	Countly.sharedInstance().recordEvent(key, segmentation, count, sum);
 				} else {
-					Log.d(LCAT, "No qued pushMessage");
+	    		Countly.sharedInstance().recordEvent(key, segmentation, count);
 				}
 			} else {
-				Log.d(LCAT, "No Listener pushCallBack found");
-			}
-		}
-
-		@Kroll.method
-		public void recordPushAction(String messageId) {
-			Log.d(LCAT, "RecordPushAction");
-
-			CountlyMessaging.recordMessageAction(messageId);
-		}
-
-		@Kroll.method
-		public void setLocation(KrollDict args) {
-			Log.d(LCAT, "SetLocation");
-
-			Object latObject = args.get("latitude");
-			Object lonObject = args.get("longitude");
-			Object ipObject = args.get("ipaddress");
-
-			String location = null;
-			String ipAddress = null;
-
-			if (latObject != null && lonObject != null) {
-				location = latObject.toString() + "," + lonObject.toString();
-			}
-			Log.d(LCAT, "location string: " + location);
-
-			if (ipObject != null) {
-				ipAddress = ipObject.toString();
-			}
-			Log.d(LCAT, "ipAddress string: " + ipAddress);
-
-			Countly.sharedInstance().setLocation(null, null, location, ipAddress);
-		}
-
-		@Kroll.method
-		public void stopCount() {
-			Log.d(LCAT, "Stop Count called");
-			Countly.sharedInstance().onStop();
-		}
-
-		@Kroll.method
-		public void startCrashReporting() {
-			Log.d(LCAT, "startCrashReporting");
-
-			Countly.sharedInstance().enableCrashReporting();
-		}
-
-		@Kroll.method
-		public void startCrashReportingWithSegments(HashMap segments) {
-			Log.d(LCAT, "startCrashReportingWithSegments");
-
-			// enableCrashReporting
-			Countly.sharedInstance().enableCrashReporting();
-
-			// set setCustomCrashSegments
-			Countly.sharedInstance().setCustomCrashSegments(segments);
-		}
-
-		@Kroll.method
-		public void startCrashReportingWithSegmentsAndDeviceId(HashMap segments, String deviceId) {
-			Log.d(LCAT, "startCrashReportingWithSegments");
-
-			// enableCrashReporting
-			Countly.sharedInstance().enableCrashReporting();
-
-			// set setCustomCrashSegments
-			Countly.sharedInstance().setCustomCrashSegments(segments);
-
-			// updates device id to match an actual user
-    	Countly.sharedInstance().changeDeviceId(DeviceId.Type.DEVELOPER_SUPPLIED, deviceId);
-		}
-
-
-		@Kroll.method
-		public void recordUncaughtException(HashMap args) {
-			Log.d(LCAT, "recordUncaughtException");
-
-			String exception = printMap(args);
-
-			Log.d(LCAT, exception);
-
-			Countly.sharedInstance().logJavascriptFatalException(exception);
-		}
-
-		@Kroll.method
-		public void recordHandledException(HashMap args) {
-			Log.d(LCAT, "recordHandledException");
-
-			String exception = printMap(args);
-
-			Log.d(LCAT, exception);
-
-			Countly.sharedInstance().logJavascriptNonFatalException(exception);
-		}
-
-		@Kroll.method
-		public void addCrashLog(HashMap crashLogMap) {
-			Log.d(LCAT, "addCrashLog");
-
-			String crashLog = printMap(crashLogMap);
-			Countly.sharedInstance().addCrashLog(crashLog);
-		}
-
-		public void stackOverflow() {
-		 	this.stackOverflow();
-		}
-
-		@Kroll.method
-		public void crashTest(int crashNumber) {
-			if (crashNumber == 1) {
-				Log.d(LCAT, "Running crashTest 1");
-
-				stackOverflow();
-			} else if (crashNumber == 2) {
-				Log.d(LCAT, "Running crashTest 2");
-
-				int test = 10/0;
-			} else if (crashNumber == 3) {
-				Log.d(LCAT, "Running crashTest 3");
-
-				while (true) {
-					Object[] o = null;
-					while (true) { o = new Object[] { o }; }
+	    	if (sumObject != null) {
+	    		double sum = Double.parseDouble(sumObject.toString());
+	      	Countly.sharedInstance().recordEvent(key, count, sum);
+				} else {
+	 				Countly.sharedInstance().recordEvent(key, count);
 				}
-			} else {
-				Log.d(LCAT, "Running crashTest 4");
-
-				throw new RuntimeException("This is a crash");
-			}
+	  	}
 		}
+	}
 
-		@Kroll.method
-		public void event(KrollDict args) {
-			Log.d(LCAT, "Event Send called");
+	@Kroll.method
+	public void view(KrollDict args) {
+		Log.d(LCAT, "View Send called");
 
-			Object keyObject = args.get("name");
-			Object countObject = args.get("count");
-			Object sumObject = args.get("sum");
-			Object segmentationObject = args.get("segmentation");
-			String key = keyObject.toString();
-			int count = (Integer) countObject;
+		Object nameObject = args.get("name");
+		String name = nameObject.toString();
 
-			if (segmentationObject != null) {
-	    	HashMap<String, String> segmentation = (HashMap<String, String>) segmentationObject;
-		    if (sumObject != null) {
-		    	double sum = Double.parseDouble(sumObject.toString());
-		      Countly.sharedInstance().recordEvent(key, segmentation, count, sum);
-		    } else {
-		    	Countly.sharedInstance().recordEvent(key, segmentation, count);
-		    }
-		  } else if (sumObject != null) {
-	    	double sum = Double.parseDouble(sumObject.toString());
-		   	Countly.sharedInstance().recordEvent(key, count, sum);
-		  } else {
-		 		Countly.sharedInstance().recordEvent(key, count);
-		  }
-		}
-
-		@Kroll.method
-		public void view(KrollDict args) {
-			Log.d(LCAT, "View Send called");
-
-			Object nameObject = args.get("name");
-			String name = nameObject.toString();
-
-			Object segmentationObject = args.get("segmentation");
-			if (segmentationObject != null) {
-				HashMap<String, String> segmentation = (HashMap<String, String>) segmentationObject;
+		Object segmentationObject = args.get("segmentation");
+		if (segmentationObject != null) {
+			HashMap<String, String> segmentation = (HashMap<String, String>) segmentationObject;
+			if (segmentation.size() > 0) {
 				Countly.sharedInstance().recordView(name, segmentation);
 			} else {
 				Countly.sharedInstance().recordView(name);
 			}
+		} else {
+			Countly.sharedInstance().recordView(name);
 		}
+	}
 
-		@Kroll.method
-		public void userData(KrollDict args) {
-			Log.d(LCAT, "UserData Send called");
+	@Kroll.method
+	public void userData(KrollDict args) {
+		Log.d(LCAT, "UserData Send called");
 
-			Object userDataObject = args.get("userData");
-			Object customUserDataObject = args.get("customUserData");
+		Object userDataObject = args.get("userData");
+    HashMap<String, String> userData = (HashMap<String, String>) userDataObject;
 
-	    HashMap<String, String> userData = (HashMap<String, String>) userDataObject;
-
-			if (customUserDataObject != null) {
-	      HashMap<String, String> customUserData = (HashMap<String, String>) customUserDataObject;
+		Object customUserDataObject = args.get("customUserData");
+		if (customUserDataObject != null) {
+      HashMap<String, String> customUserData = (HashMap<String, String>) customUserDataObject;
+			if (customUserData.size() > 0) {
 				Countly.sharedInstance().setUserData(userData, customUserData);
-
 			} else {
 				Countly.sharedInstance().setUserData(userData);
 			}
+		} else {
+			Countly.sharedInstance().setUserData(userData);
 		}
+	}
 
-		@Kroll.method
-		public String getOUDID() {
-			Log.d(LCAT, "Countly getOUDID");
+	@Kroll.method
+	public String getOUDID() {
+		Log.d(LCAT, "Countly getOUDID");
 
-			String OUDID = Countly.sharedInstance().getOUDID();
-			return OUDID;
-		}
+		String OUDID = Countly.sharedInstance().getOUDID();
+		return OUDID;
+	}
 
-		@Kroll.method
-		public void changeDeviceId(String deviceId) {
-			Log.d(LCAT, "Change device id called");
+	@Kroll.method
+	public void changeDeviceId(String deviceId) {
+		Log.d(LCAT, "Change device id called");
 
-			Countly.sharedInstance().changeDeviceId(DeviceId.Type.DEVELOPER_SUPPLIED, deviceId);
-		}
+		Countly.sharedInstance().changeDeviceId(DeviceId.Type.DEVELOPER_SUPPLIED, deviceId);
+	}
 
-		// Class to find instance of Module
-		public static TitaniumCountlyAndroidMessagingModule getModule() {
-			TitaniumCountlyAndroidMessagingModule module = null;
-				TiApplication appContext = TiApplication.getInstance();
-				Activity activity = appContext.getCurrentActivity();
-				Log.d(LCAT, "Activity:" + activity);
-				Log.d(LCAT, "lastinstance" + lastInstance);
-				if ((activity != null) && (lastInstance != null)) {
-					module = (TitaniumCountlyAndroidMessagingModule)lastInstance.get();
-				}
-				return module;
-		}
-
-		private static String printBundle(Bundle bundle) {
-			StringBuilder sb = new StringBuilder();
-			for (String key : bundle.keySet()) {
-					sb.append("\nkey:" + key + ", value:" + bundle.getString(key));
+	// Class to find instance of Module
+	public static TitaniumCountlyAndroidMessagingModule getModule() {
+		TitaniumCountlyAndroidMessagingModule module = null;
+			TiApplication appContext = TiApplication.getInstance();
+			Activity activity = appContext.getCurrentActivity();
+			Log.d(LCAT, "Activity:" + activity);
+			Log.d(LCAT, "lastinstance" + lastInstance);
+			if ((activity != null) && (lastInstance != null)) {
+				module = (TitaniumCountlyAndroidMessagingModule)lastInstance.get();
 			}
-			return sb.toString();
+			return module;
+	}
+
+	private static String printBundle(Bundle bundle) {
+		StringBuilder sb = new StringBuilder();
+		for (String key : bundle.keySet()) {
+				sb.append("\nkey:" + key + ", value:" + bundle.getString(key));
 		}
+		return sb.toString();
+	}
 
-		public static String printMap(Map mp) {
-			StringBuilder sb = new StringBuilder();
-			Iterator it = mp.entrySet().iterator();
-			while(it.hasNext()){
-				Map.Entry pair = (Map.Entry)it.next();
-				sb.append(pair.getKey() + " = " + pair.getValue() + " ");
-			}
-			return sb.toString();
+	public static String printMap(Map mp) {
+		StringBuilder sb = new StringBuilder();
+		Iterator it = mp.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry pair = (Map.Entry)it.next();
+			sb.append(pair.getKey() + " = " + pair.getValue() + " ");
 		}
+		return sb.toString();
+	}
 
-		private static HashMap<String, String> bundleToHashMap(Bundle bundle){
-			HashMap<String, String> hash = new HashMap<String, String>();
-			Set<String> keys = bundle.keySet();
-			for (String key : keys) {
-			    	hash.put(key, bundle.get(key).toString());
-			}
-			return hash;
+	private static HashMap<String, String> bundleToHashMap(Bundle bundle){
+		HashMap<String, String> hash = new HashMap<String, String>();
+		Set<String> keys = bundle.keySet();
+		for (String key : keys) {
+		    	hash.put(key, bundle.get(key).toString());
 		}
+		return hash;
+	}
 
-		private static HashMap<String, String> jsonToHashMap(String t) throws JSONException {
-	        HashMap<String, String> map = new HashMap<String, String>();
-	        JSONObject jObject = new JSONObject(t);
-	        Iterator<?> keys = jObject.keys();
+	private static HashMap<String, String> jsonToHashMap(String t) throws JSONException {
+        HashMap<String, String> map = new HashMap<String, String>();
+        JSONObject jObject = new JSONObject(t);
+        Iterator<?> keys = jObject.keys();
 
-	        while( keys.hasNext() ){
-	            String key = (String)keys.next();
-	            String value = jObject.getString(key);
-	            map.put(key, value);
-
-	        }
-
-	        return map;
-	    }
+        while( keys.hasNext() ){
+            String key = (String)keys.next();
+            String value = jObject.getString(key);
+            map.put(key, value);
+        }
+        return map;
+    }
 
 }
